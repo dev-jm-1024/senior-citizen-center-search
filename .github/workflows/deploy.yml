@@ -8,6 +8,7 @@ env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   SERVICE_NAME: senior-citizen-app
   REGION: asia-northeast3
+  IMAGE_REF: ${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.SERVICE_NAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
 
 jobs:
   deploy:
@@ -23,58 +24,50 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 1) gradlew 실행 권한 부여 (exit code 126 방지)
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      # 2) JAR 빌드
       - name: Build JAR
-        run: ./gradlew bootJar
+        run: ./gradlew bootJar --no-daemon
 
-      # 3) Google Cloud 인증 (최신 방식)
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      # 4) Google Cloud SDK 설정
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      # 5) 프로젝트 설정 확인
       - name: Verify authentication
         run: |
           gcloud auth list
           gcloud config list project
 
-      # 6) Artifact Registry Repository 생성 (이미 존재하면 무시)
-      - name: Create Artifact Registry Repository
+      - name: Create Artifact Registry Repository (idempotent)
         run: |
           gcloud artifacts repositories create $SERVICE_NAME \
             --repository-format=docker \
             --location=$REGION || true
 
-      # 7) Artifact Registry용 Docker 인증 설정
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker $REGION-docker.pkg.dev --quiet
 
-      # 8) Docker 이미지 빌드 및 Artifact Registry로 푸시
       - name: Build and Push to Artifact Registry
         run: |
-          docker build -t $REGION-docker.pkg.dev/$PROJECT_ID/$SERVICE_NAME/$SERVICE_NAME:$GITHUB_SHA .
-          docker push $REGION-docker.pkg.dev/$PROJECT_ID/$SERVICE_NAME/$SERVICE_NAME:$GITHUB_SHA
+          docker build -t $IMAGE_REF .
+          docker push $IMAGE_REF
 
-      # 9) Cloud Run 배포 (Artifact Registry 이미지 사용)
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy $SERVICE_NAME \
-            --image $REGION-docker.pkg.dev/$PROJECT_ID/$SERVICE_NAME/$SERVICE_NAME:$GITHUB_SHA \
+            --image $IMAGE_REF \
             --platform managed \
             --region $REGION \
             --allow-unauthenticated \
-            --service-account=center-search@center-470409.iam.gserviceaccount.com \
+            --service-account center-search@center-470409.iam.gserviceaccount.com \
+            --add-cloudsql-instances "center-470409:asia-northeast3:senior-citizen-db"  # ✅ 핵심 추가
             --set-env-vars="SPRING_PROFILES_ACTIVE=db" \
             --set-env-vars="NCP_CLIENT_ID=742tyl7pxy" \
             --set-env-vars="NCP_CLIENT_SECRET=${{ secrets.NCP_CLIENT_SECRET }}" \
@@ -82,4 +75,5 @@ jobs:
             --set-env-vars="KAKAO_JS_API_KEY=${{ secrets.KAKAO_JS_API_KEY }}" \
             --set-env-vars="DB_URL=${{ secrets.DB_URL }}" \
             --set-env-vars="DB_USERNAME=${{ secrets.DB_USERNAME }}" \
-            --set-env-vars="DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
+            --set-env-vars="DB_PASSWORD=${{ secrets.DB_PASSWORD }}" \
+            --timeout=600
