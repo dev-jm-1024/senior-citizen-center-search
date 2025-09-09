@@ -36,6 +36,7 @@ jobs:
         with:
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           project_id: ${{ secrets.GCP_PROJECT_ID }}
+          export_default_credentials: true
 
       # 3) 필수 API 활성화
       - name: Enable required APIs
