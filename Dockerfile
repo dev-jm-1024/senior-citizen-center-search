@@ -9,5 +9,5 @@ COPY build/libs/*-SNAPSHOT.jar app.jar
 # Cloud Run의 PORT 환경변수 사용, 기본값 8080
 EXPOSE ${PORT:-8080}
 
-# Cloud Run에서 제공하는 PORT 환경변수를 Spring Boot의 server.port로 전달
-ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT:-8080} -jar /app/app.jar"]
+# JVM 메모리 설정과 함께 시작
+ENTRYPOINT ["sh", "-c", "java -Xmx1536m -Xms512m -Dserver.port=${PORT:-8080} -jar /app/app.jar"]

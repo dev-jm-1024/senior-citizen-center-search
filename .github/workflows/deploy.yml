@@ -60,13 +60,13 @@ jobs:
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker $REGION-docker.pkg.dev --quiet
 
-      # 8) Docker 이미지 빌드 및 Artifact Registry로 push
+      # 8) Docker 이미지 빌드 및 Artifact Registry로 푸시
       - name: Build and Push to Artifact Registry
         run: |
           docker build -t $REGION-docker.pkg.dev/$PROJECT_ID/$SERVICE_NAME/$SERVICE_NAME:$GITHUB_SHA .
           docker push $REGION-docker.pkg.dev/$PROJECT_ID/$SERVICE_NAME/$SERVICE_NAME:$GITHUB_SHA
 
-      # 9) Cloud Run 배포 (Artifact Registry 이미지 사용)
+      # 9) Cloud Run 배포 (충분한 리소스와 타임아웃)
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy $SERVICE_NAME \
@@ -74,7 +74,14 @@ jobs:
             --platform managed \
             --region $REGION \
             --allow-unauthenticated \
+            --memory=2Gi \
+            --cpu=2 \
+            --timeout=900 \
+            --port=8080 \
+            --max-instances=10 \
             --set-env-vars="SPRING_PROFILES_ACTIVE=db" \
+            --set-env-vars="SERVER_PORT=8080" \
+            --set-env-vars="JAVA_OPTS=-Xmx1536m -Xms512m" \
             --set-env-vars="NCP_CLIENT_ID=742tyl7pxy" \
             --set-env-vars="NCP_CLIENT_SECRET=${{ secrets.NCP_CLIENT_SECRET }}" \
             --set-env-vars="KAKAO_REST_API_KEY=${{ secrets.KAKAO_REST_API_KEY }}" \
