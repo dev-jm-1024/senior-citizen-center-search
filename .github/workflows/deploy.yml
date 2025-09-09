@@ -45,7 +45,7 @@ jobs:
           gcloud services enable run.googleapis.com
           gcloud services enable cloudbuild.googleapis.com
 
-      # 4) Artifact Registry Repository 생성 (이미 존재하면 무시)
+      # 4) Artifact Registry Repository 생성 (존재하면 무시)
       - name: Create Artifact Registry Repository
         run: |
           gcloud artifacts repositories create $SERVICE_NAME \
