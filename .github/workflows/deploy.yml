@@ -1,0 +1,57 @@
+name: Deploy to GCP Cloud Run
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  SERVICE_NAME: senior-citizen-app
+  REGION: asia-northeast3
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build JAR
+        run: ./gradlew bootJar
+
+      - name: Setup Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Configure Docker for GCR
+        run: gcloud auth configure-docker
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA .
+          docker push gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy $SERVICE_NAME \
+            --image gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA \
+            --platform managed \
+            --region $REGION \
+            --allow-unauthenticated \
+            --set-env-vars="SPRING_PROFILES_ACTIVE=db" \
+            --set-env-vars="NCP_CLIENT_ID=742tyl7pxy" \
+            --set-env-vars="NCP_CLIENT_SECRET=${{ secrets.NCP_CLIENT_SECRET }}" \
+            --set-env-vars="KAKAO_REST_API_KEY=${{ secrets.KAKAO_REST_API_KEY }}" \
+            --set-env-vars="KAKAO_JS_API_KEY=3ae3eccefa2762d77a09a1e17e663f47" \
+            --set-env-vars="DB_URL=${{ secrets.DB_URL }}" \
+            --set-env-vars="DB_USERNAME=${{ secrets.DB_USERNAME }}" \
+            --set-env-vars="DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
