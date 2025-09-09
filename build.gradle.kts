@@ -38,7 +38,7 @@ dependencies {
     runtimeOnly("com.mysql:mysql-connector-j")
 
     // ✅ Cloud SQL 커넥터 (소켓 팩토리)
-    implementation("com.google.cloud.sql:mysql-socket-factory-connector-j-8:1.14.3")
+    implementation("com.google.cloud.sql:mysql-socket-factory-connector-j-8:1.25.3")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
