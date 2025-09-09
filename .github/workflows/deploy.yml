@@ -72,7 +72,6 @@ jobs:
             --timeout=900 \
             --port=8080 \
             --max-instances=10 \
-            --add-cloudsql-instances="center-470409:asia-northeast3:senior-citizen-db" \
             --set-env-vars="SPRING_PROFILES_ACTIVE=db" \
             --set-env-vars="SERVER_PORT=8080" \
             --set-env-vars="JAVA_OPTS=-Xmx1536m -Xms512m" \
