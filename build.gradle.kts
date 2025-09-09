@@ -35,9 +35,12 @@ dependencies {
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
-    // ✅ Cloud SQL MySQL Connector
+    // MySQL Connector
     runtimeOnly("com.mysql:mysql-connector-j")
-    implementation("com.google.cloud.sql:mysql-socket-factory-connector-j-8:1.14.3")
+
+    // Cloud SQL 올바른 의존성들
+    implementation("com.google.cloud.sql:mysql-socket-factory-connector-j-8:1.15.2")
+    implementation("com.google.cloud.sql:cloud-sql-connector-jdbc-mysql:1.15.2")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
