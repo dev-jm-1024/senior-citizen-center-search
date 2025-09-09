@@ -32,19 +32,18 @@ dependencies {
 
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
-
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
-    // MySQL Connector
+    // ✅ MySQL JDBC 드라이버
     runtimeOnly("com.mysql:mysql-connector-j")
 
-    // Cloud SQL 올바른 의존성들
-    implementation("com.google.cloud.sql:mysql-socket-factory-connector-j-8:1.15.2")
-    implementation("com.google.cloud.sql:cloud-sql-connector-jdbc-mysql:1.15.2")
+    // ✅ Cloud SQL 커넥터 (소켓 팩토리)
+    implementation("com.google.cloud.sql:mysql-socket-factory-connector-j-8:1.14.3")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
+
 
 tasks.withType<Test> {
     useJUnitPlatform()
