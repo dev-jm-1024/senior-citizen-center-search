@@ -67,7 +67,7 @@ jobs:
             --region $REGION \
             --allow-unauthenticated \
             --service-account center-search@center-470409.iam.gserviceaccount.com \
-            --add-cloudsql-instances "center-470409:asia-northeast3:senior-citizen-db"  # ✅ 핵심 추가
+            --add-cloudsql-instances "center-470409:asia-northeast3:senior-citizen-db" \
             --set-env-vars="SPRING_PROFILES_ACTIVE=db" \
             --set-env-vars="NCP_CLIENT_ID=742tyl7pxy" \
             --set-env-vars="NCP_CLIENT_SECRET=${{ secrets.NCP_CLIENT_SECRET }}" \
