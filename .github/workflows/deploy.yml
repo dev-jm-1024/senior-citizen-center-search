@@ -49,31 +49,24 @@ jobs:
           gcloud auth list
           gcloud config list project
 
-      # 6) 필수 API 활성화
-      - name: Enable required APIs
-        run: |
-          gcloud services enable artifactregistry.googleapis.com
-          gcloud services enable run.googleapis.com
-          gcloud services enable cloudbuild.googleapis.com
-
-      # 7) Artifact Registry Repository 생성 (이미 존재하면 무시)
+      # 6) Artifact Registry Repository 생성 (이미 존재하면 무시)
       - name: Create Artifact Registry Repository
         run: |
           gcloud artifacts repositories create $SERVICE_NAME \
             --repository-format=docker \
             --location=$REGION || true
 
-      # 8) Artifact Registry용 Docker 인증 설정
+      # 7) Artifact Registry용 Docker 인증 설정
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker $REGION-docker.pkg.dev --quiet
 
-      # 9) Docker 이미지 빌드 및 Artifact Registry로 푸시
+      # 8) Docker 이미지 빌드 및 Artifact Registry로 푸시
       - name: Build and Push to Artifact Registry
         run: |
           docker build -t $REGION-docker.pkg.dev/$PROJECT_ID/$SERVICE_NAME/$SERVICE_NAME:$GITHUB_SHA .
           docker push $REGION-docker.pkg.dev/$PROJECT_ID/$SERVICE_NAME/$SERVICE_NAME:$GITHUB_SHA
 
-      # 10) Cloud Run 배포 (Artifact Registry 이미지 사용)
+      # 9) Cloud Run 배포 (Artifact Registry 이미지 사용)
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy $SERVICE_NAME \
