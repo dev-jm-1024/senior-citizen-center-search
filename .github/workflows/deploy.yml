@@ -60,7 +60,7 @@ jobs:
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker $REGION-docker.pkg.dev --quiet
 
-      # 8) Docker 이미지 빌드 및 Artifact Registry로 푸시
+      # 8) Docker 이미지 빌드 및 Artifact Registry로 push
       - name: Build and Push to Artifact Registry
         run: |
           docker build -t $REGION-docker.pkg.dev/$PROJECT_ID/$SERVICE_NAME/$SERVICE_NAME:$GITHUB_SHA .
