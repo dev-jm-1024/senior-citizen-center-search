@@ -8,7 +8,6 @@ env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   SERVICE_NAME: senior-citizen-app
   REGION: asia-northeast3
-  IMAGE_REF: ${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.SERVICE_NAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
 
 jobs:
   deploy:
@@ -28,7 +27,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build JAR
-        run: ./gradlew bootJar --no-daemon
+        run: ./gradlew bootJar
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
@@ -45,7 +44,7 @@ jobs:
           gcloud auth list
           gcloud config list project
 
-      - name: Create Artifact Registry Repository (idempotent)
+      - name: Create Artifact Registry Repository
         run: |
           gcloud artifacts repositories create $SERVICE_NAME \
             --repository-format=docker \
@@ -56,24 +55,29 @@ jobs:
 
       - name: Build and Push to Artifact Registry
         run: |
-          docker build -t $IMAGE_REF .
-          docker push $IMAGE_REF
+          docker build -t $REGION-docker.pkg.dev/$PROJECT_ID/$SERVICE_NAME/$SERVICE_NAME:$GITHUB_SHA .
+          docker push $REGION-docker.pkg.dev/$PROJECT_ID/$SERVICE_NAME/$SERVICE_NAME:$GITHUB_SHA
 
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy $SERVICE_NAME \
-            --image $IMAGE_REF \
+            --image $REGION-docker.pkg.dev/$PROJECT_ID/$SERVICE_NAME/$SERVICE_NAME:$GITHUB_SHA \
             --platform managed \
             --region $REGION \
             --allow-unauthenticated \
-            --service-account center-search@center-470409.iam.gserviceaccount.com \
-            --add-cloudsql-instances "center-470409:asia-northeast3:senior-citizen-db" \
+            --memory=2Gi \
+            --cpu=2 \
+            --timeout=900 \
+            --port=8080 \
+            --max-instances=10 \
+            --add-cloudsql-instances="center-470409:asia-northeast3:senior-citizen-db" \
             --set-env-vars="SPRING_PROFILES_ACTIVE=db" \
+            --set-env-vars="SERVER_PORT=8080" \
+            --set-env-vars="JAVA_OPTS=-Xmx1536m -Xms512m" \
             --set-env-vars="NCP_CLIENT_ID=742tyl7pxy" \
             --set-env-vars="NCP_CLIENT_SECRET=${{ secrets.NCP_CLIENT_SECRET }}" \
             --set-env-vars="KAKAO_REST_API_KEY=${{ secrets.KAKAO_REST_API_KEY }}" \
             --set-env-vars="KAKAO_JS_API_KEY=${{ secrets.KAKAO_JS_API_KEY }}" \
             --set-env-vars="DB_URL=${{ secrets.DB_URL }}" \
             --set-env-vars="DB_USERNAME=${{ secrets.DB_USERNAME }}" \
-            --set-env-vars="DB_PASSWORD=${{ secrets.DB_PASSWORD }}" \
-            --timeout=600
+            --set-env-vars="DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
