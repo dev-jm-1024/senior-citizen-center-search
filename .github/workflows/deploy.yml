@@ -23,6 +23,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      # 1) gradlew 실행 권한 부여 (exit code 126 방지)
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      # 2) JAR 빌드
       - name: Build JAR
         run: ./gradlew bootJar
 
@@ -33,13 +38,14 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
       - name: Configure Docker for GCR
-        run: gcloud auth configure-docker
+        run: gcloud auth configure-docker --quiet
 
       - name: Build and Push Docker Image
         run: |
           docker build -t gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA .
           docker push gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA
 
+      # 3) Cloud Run 배포 + 프로파일 db 활성화
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy $SERVICE_NAME \
@@ -51,7 +57,7 @@ jobs:
             --set-env-vars="NCP_CLIENT_ID=742tyl7pxy" \
             --set-env-vars="NCP_CLIENT_SECRET=${{ secrets.NCP_CLIENT_SECRET }}" \
             --set-env-vars="KAKAO_REST_API_KEY=${{ secrets.KAKAO_REST_API_KEY }}" \
-            --set-env-vars="KAKAO_JS_API_KEY=3ae3eccefa2762d77a09a1e17e663f47" \
+            --set-env-vars="KAKAO_JS_API_KEY=${{ secrets.KAKAO_JS_API_KEY }}" \
             --set-env-vars="DB_URL=${{ secrets.DB_URL }}" \
             --set-env-vars="DB_USERNAME=${{ secrets.DB_USERNAME }}" \
             --set-env-vars="DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
