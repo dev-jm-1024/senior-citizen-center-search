@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>성남시 센터 목록</title>
+    <link rel="stylesheet" th:href="@{/center-skin/center-main.css}">
+    <link rel="stylesheet" th:href="@{/center-skin/menu-bar.css}">
+</head>
+<body>
+<div class="bg-overlay">
+<div th:replace="common/menu-bar :: menuBar"></div>
+<div class="container">
+    <h1>성남시 센터 목록</h1>
+
+    <!-- 각 구별로 센터 목록 표시 -->
+    <div th:each="areaEntry : ${vm}" th:class="'area-section ' + (${areaEntry.key} == '수정구' ? 'theme-red' : (${areaEntry.key} == '분당구' ? 'theme-blue' : 'theme-orange'))">
+        <div class="area-title" th:text="${areaEntry.key}">구 이름</div>
+        <a th:href="@{'/center/view/quarter/' + ${areaEntry.key}}"><button class="area-cta-btn" type="button">해당 지역으로 이동하기</button></a>
+
+        <!-- 해당 구에 센터가 있는 경우 -->
+        <div th:if="${!areaEntry.value.isEmpty()}" class="center-grid">
+            <div th:each="center : ${areaEntry.value}" class="center-card">
+                <div class="center-name" th:text="${center.locationName()}">센터명</div>
+                <div class="center-number" th:text="'전화번호: ' + ${center.locationNumber()}">전화번호</div>
+                <div class="center-address" th:text="${center.locationAddress()}">주소</div>
+                <a th:href="@{'/center/view/'+${center.locationId()}}" class="view-detail-btn">상세보기</a>
+            </div>
+            <!-- 더보기 타일: 5개 표시 시 남는 한 칸을 채우기 위해 노출 -->
+            <a th:if="${#lists.size(areaEntry.value) >= 5}" th:href="@{'/center/view/quarter/' + ${areaEntry.key}}" class="center-card more-card">
+                <span>더보기</span>
+            </a>
+        </div>
+
+        <!-- 해당 구에 센터가 없는 경우 -->
+        <div th:if="${areaEntry.value.isEmpty()}" class="no-centers">
+            등록된 센터가 없습니다.
+        </div>
+    </div>
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<script th:src="@{/center-skin/menu-bar.js}"></script>
+<script th:src="@{/center-skin/center-main.js}"></script>
+</body>
+</html>

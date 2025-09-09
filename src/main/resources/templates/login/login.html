@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>로그인 | 성남시 노인센터 검색</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0, user-scalable=yes">
+
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
+
+    <!-- Tailwind CSS 무력화 및 강제 스타일 적용 -->
+    <style>
+        /* Tailwind 폼 스타일 완전 무력화 */
+        input, input[type="text"], input[type="password"] {
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
+            border-radius: 30px !important;
+            border: 2px solid rgba(255, 255, 255, 0.2) !important;
+            background: rgba(255, 255, 255, 0.15) !important;
+            padding: 18px 24px !important;
+            font-size: 16px !important;
+            color: #1f2937 !important;
+            box-shadow: none !important;
+            outline: none !important;
+        }
+
+        /* 더 구체적인 셀렉터로 강제 적용 */
+        .login-form input.login-input {
+            border-radius: 30px !important;
+            background: rgba(255, 255, 255, 0.15) !important;
+            border: 2px solid rgba(255, 255, 255, 0.2) !important;
+        }
+    </style>
+
+    <!-- Critical background (초기 로드 안정화) -->
+    <style>
+        body {
+            background-image: url('https://plusb3b.kr/center-img/bg-filter.png');
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Noto Sans KR', system-ui, sans-serif;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <!-- Animation Libraries -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <!-- Login dedicated skin -->
+    <link rel="stylesheet" th:href="@{/login-skin/login.css}">
+</head>
+<body>
+<!-- Floating particles background -->
+<div class="particles-container">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+</div>
+
+<div class="bg-overlay">
+    <main class="main-container">
+        <header class="header-section">
+            <h1 class="main-title">
+                <span class="title-text">로그인</span>
+                <div class="title-underline"></div>
+            </h1>
+            <p class="sub-title">서비스 이용을 위해 로그인하세요</p>
+        </header>
+
+        <section class="login-card">
+            <div class="card-shine"></div>
+
+            <form th:action="@{/login}" method="post" class="login-form" autocomplete="on">
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <label for="username" class="input-label">아이디</label>
+                        <div class="input-container">
+                            <input id="username" name="username" type="text" required
+                                   class="login-input custom-rounded-input"
+                                   placeholder="아이디를 입력하세요"
+                                   style="border-radius: 30px !important; -webkit-appearance: none !important;" />
+                            <div class="input-focus-line"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <label for="password" class="input-label">비밀번호</label>
+                        <div class="input-container">
+                            <input id="password" name="password" type="password" required
+                                   class="login-input custom-rounded-input"
+                                   placeholder="비밀번호를 입력하세요"
+                                   style="border-radius: 30px !important; -webkit-appearance: none !important;" />
+                            <div class="input-focus-line"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-container">
+                    <button type="submit" class="action-button login-button">
+                        <span class="button-text">로그인</span>
+                        <div class="button-glow"></div>
+                        <div class="button-shine"></div>
+                    </button>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+
+<!-- Login interactions -->
+<script defer th:src="@{/login-skin/login.js}"></script>
+</body>
+</html>

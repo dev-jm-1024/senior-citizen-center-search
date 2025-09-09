@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>경로 검색 결과 | 성남시 노인센터 검색</title>
+    
+    <!-- Preconnect, Google Fonts, Animation Library -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    
+    <!-- Center Nav Result Skin -->
+    <link rel="stylesheet" th:href="@{/center-skin/center-nav-result.css}">
+    <link rel="stylesheet" th:href="@{/center-skin/menu-bar.css}">
+</head>
+<body>
+
+<div th:replace="common/menu-bar :: menuBar"></div>
+
+<div class="bg-overlay">
+    <div class="container">
+        <div class="header">
+            <h1>경로 검색 결과</h1>
+            <p>선택하신 경로의 상세 정보입니다.</p>
+        </div>
+
+        <div class="content-grid">
+            <!-- 왼쪽: 경로 정보 -->
+            <div class="route-info">
+                <h2 class="section-title">경로 정보</h2>
+
+                <!-- API 호출 성공 시 -->
+                <div th:if="${distance != null}">
+                    <!-- 경로 요약 -->
+                    <div class="route-summary">
+                        <div class="summary-item">
+                            <span class="summary-label">총 거리</span>
+                            <span class="summary-value" th:text="|${distance / 1000.0}km|">25.3km</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">예상 시간</span>
+                            <span class="summary-value" th:text="|${duration / 60000}분|">35분</span>
+                        </div>
+                    </div>
+
+                    <!-- 경로 상세 -->
+                    <div class="route-path">
+                        <h3 class="path-title">경로</h3>
+
+                        <div class="path-item">
+                            <div class="path-icon start-icon">🚀</div>
+                            <div class="path-text">
+                                <div class="path-name" th:text="${startName}">출발지명</div>
+                                <div class="path-coords" th:text="${start}">좌표</div>
+                            </div>
+                        </div>
+
+                        <div th:if="${waypoints != null and waypoints != '' and waypoints != 'null'}" th:each="waypoint, stat : ${#strings.arraySplit(waypointNames, '|')}" class="path-item">
+                            <div class="path-icon waypoint-icon" th:text="|${stat.index + 1}|">1</div>
+                            <div class="path-text">
+                                <div class="path-name" th:text="${waypoint}">경유지명</div>
+                                <div class="path-coords" th:text="${#strings.arraySplit(waypoints, '|')[stat.index]}">좌표</div>
+                            </div>
+                        </div>
+
+                        <div class="path-item">
+                            <div class="path-icon goal-icon">🎯</div>
+                            <div class="path-text">
+                                <div class="path-name" th:text="${goalName}">도착지명</div>
+                                <div class="path-coords" th:text="${goal}">좌표</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 턴바이턴 안내 (전체 표시) -->
+                    <div class="directions" th:if="${guides != null and not #lists.isEmpty(guides)}">
+                        <h3 class="directions-title">상세 안내</h3>
+                        <div class="directions-container">
+                            <div th:each="guide, stat : ${guides}" class="direction-item">
+                                <div class="direction-number" th:text="${stat.index + 1}">1</div>
+                                <div class="direction-text">
+                                    <div th:text="${guide.instructions}">안내 문구</div>
+                                    <div class="direction-distance" th:text="|${guide.distance}m|">거리</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API 호출 실패 시 -->
+                <div th:if="${error != null}" class="error-message">
+                    <h3>경로 검색 실패</h3>
+                    <p th:text="${error}">오류 메시지</p>
+                </div>
+
+                <button class="btn btn-new-search" onclick="location.href='/center/nav/start'">
+                    새로운 경로 검색
+                </button>
+            </div>
+
+            <!-- 오른쪽: 지도 -->
+            <div class="map-container">
+                <h2 class="section-title">지도</h2>
+                <div id="map" class="map-placeholder">
+                    지도가 여기에 표시됩니다
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Naver Maps API -->
+<script defer src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=742tyl7pxy" type="text/javascript"></script>
+
+<!-- Map Data for JavaScript -->
+<script th:inline="javascript">
+    // Pass Thymeleaf data to JavaScript
+    window.mapData = {
+        start: /*[[${start}]]*/ '127.0000,37.0000',
+        goal: /*[[${goal}]]*/ '127.0000,37.0000',
+        waypoints: /*[[${waypoints}]]*/ null,
+        pathCoords: /*[[${pathCoords}]]*/ null,
+        startName: /*[[${startName}]]*/ '출발지',
+        goalName: /*[[${goalName}]]*/ '도착지',
+        waypointNames: /*[[${waypointNames}]]*/ ''
+    };
+</script>
+
+<!-- Center Nav Result JavaScript -->
+<script defer th:src="@{/center-skin/center-nav-result.js}"></script>
+<script th:src="@{/center-skin/menu-bar.js}"></script>
+
+</body>
+</html>

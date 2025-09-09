@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>성남시 노인센터 검색</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0, user-scalable=yes">
+    <meta name="description" content="성남시 노인센터, 경로당 위치 정보를 쉽게 찾아보세요. 지역별 검색과 등록이 가능합니다.">
+    <meta name="keywords" content="성남시, 노인센터, 경로당, 지역검색, 성남시청">
+    <meta name="author" content="성남시">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="성남시 노인센터 검색">
+    <meta property="og:description" content="성남시 노인센터, 경로당 위치 정보를 쉽게 찾아보세요">
+    <meta property="og:image" content="https://plusb3b.kr/center-img/bg-filter.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="성남시 노인센터 검색">
+    <meta property="twitter:description" content="성남시 노인센터, 경로당 위치 정보를 쉽게 찾아보세요">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <!-- Preconnect to external domains for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://unpkg.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://oapi.map.naver.com">
+
+    <!-- Google Fonts - optimized loading -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS with optimized configuration -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
+    <script>
+        // Tailwind 설정 최적화
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'noto': ['Noto Sans KR', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif']
+                    },
+                    animation: {
+                        'fade-in-down': 'fadeInDown 1s ease-out',
+                        'fade-in-up': 'fadeInUp 1s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    backdropBlur: {
+                        xs: '2px',
+                    }
+                }
+            },
+            mode: 'jit',
+            // 다크 모드 지원
+            darkMode: 'media'
+        }
+
+        // 개발 환경에서만 콘솔 경고 억제
+        if (typeof console !== 'undefined' && location.hostname !== 'localhost') {
+            const originalWarn = console.warn;
+            console.warn = function(...args) {
+                const message = args[0];
+                if (typeof message === 'string' &&
+                    (message.includes('cdn.tailwindcss.com should not be used in production') ||
+                        message.includes('development'))) {
+                    return;
+                }
+                originalWarn.apply(console, args);
+            };
+        }
+    </script>
+
+    <!-- Critical CSS (인라인으로 포함하여 렌더링 블로킹 방지) -->
+    <style>
+        /* Critical above-the-fold styles */
+        body {
+            background-image: url('https://plusb3b.kr/center-img/bg-filter.png');
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Noto Sans KR', system-ui, sans-serif;
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .bg-overlay {
+            background: linear-gradient(135deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.2) 100%);
+            backdrop-filter: blur(1px);
+            min-height: 100vh;
+        }
+
+        /* 로딩 상태 숨김 */
+        .loading-overlay {
+            display: none;
+        }
+
+        /* 초기 가시성 보장 */
+        .main-container, .header-section, .map-container, .button-container {
+            opacity: 1;
+            visibility: visible;
+            display: block;
+        }
+    </style>
+
+    <!-- External Libraries - 지연 로딩 최적화 -->
+    <!-- Vue.js 3 Production Build -->
+    <script defer src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
+    <!-- GSAP Animation Library -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <!-- Anime.js Animation Library -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <!-- Custom CSS - 지연 로딩 -->
+    <link rel="stylesheet" th:href="@{/center-skin/index.css}" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" th:href="@{/center-skin/index.css}"></noscript>
+    <!-- Menu Bar CSS -->
+    <link rel="stylesheet" th:href="@{/center-skin/menu-bar.css}">
+    <!-- Search Bar CSS -->
+    <link rel="stylesheet" th:href="@{/center-skin/search-bar.css}">
+
+    <!-- Naver Maps API -->
+    <script defer th:src="@{'https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=742tyl7pxy'}" type="text/javascript"></script>
+
+    <!-- JSON-LD 구조화 데이터 -->
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "성남시 노인센터 검색",
+            "description": "성남시 노인센터, 경로당 위치 정보 검색 서비스",
+            "url": "https://your-domain.com",
+            "applicationCategory": "GovernmentApplication",
+            "operatingSystem": "All",
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "KRW"
+            }
+        }
+    </script>
+</head>
+<body>
+<!-- Skip to main content for accessibility -->
+<a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-blue-600 text-white px-4 py-2 rounded z-50">메인 콘텐츠로 건너뛰기</a>
+
+<!-- 로딩 오버레이 (개선된 버전) -->
+<div class="loading-overlay fixed inset-0 bg-gradient-to-br from-black/80 to-black/90 flex items-center justify-center z-50" style="display: none;">
+    <div class="text-center">
+        <div class="spinner inline-block w-12 h-12 border-4 border-white/20 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+        <p class="text-white text-lg font-medium">로딩 중...</p>
+    </div>
+</div>
+
+<!-- 배경 오버레이 -->
+<div class="bg-overlay">
+
+    <!-- 메인 콘텐츠 (Vue 앱 마운트 지점) -->
+    <main id="app" class="main-container max-w-6xl mx-auto px-4 py-8 relative z-10">
+        <!-- 헤더 섹션 -->
+        <header class="header-section text-center mb-12" id="main-content" style="position: relative; z-index: 100000;">
+            <h1 class="main-title text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-4 relative">
+                성남시 경로당
+                
+            </h1>
+            <p class="sub-title text-lg md:text-xl text-white/90 font-medium mt-6">
+                가까운 경로당을 지도에서 한눈에
+            </p>
+            
+            <!-- 검색바 섹션 -->
+            <div class="search-section mt-8 mb-8">
+                <div th:replace="~{common/search-bar :: searchBar}"></div>
+            </div>
+        </header>
+
+        <!-- 지도 컨테이너 -->
+        <section class="map-container bg-white/95 rounded-3xl p-6 shadow-2xl backdrop-blur-xl border border-white/20 mb-8 transition-all duration-500 hover:shadow-3xl hover:-translate-y-1" aria-label="노인센터 위치 지도" style="position: relative; z-index: 1;">
+            <div id="map" class="w-full h-96 md:h-[450px] rounded-2xl shadow-lg overflow-hidden" style="min-height:360px;" role="img" aria-label="성남시 노인센터 위치를 표시하는 지도"></div>
+
+            <!-- 지도 컨트롤 버튼들 -->
+            <div class="mt-4 flex justify-center gap-2 opacity-75">
+                <button type="button" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-sm text-gray-600 transition-colors" onclick="window.naverMap && window.naverMap.setZoom(window.naverMap.getZoom() + 1)" aria-label="지도 확대">
+                    <span class="sr-only">확대</span>+
+                </button>
+                <button type="button" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-sm text-gray-600 transition-colors" onclick="window.naverMap && window.naverMap.setZoom(window.naverMap.getZoom() - 1)" aria-label="지도 축소">
+                    <span class="sr-only">축소</span>-
+                </button>
+            </div>
+        </section>
+
+        <!-- 액션 버튼 컨테이너 -->
+        <nav class="button-container flex flex-col sm:flex-row gap-6 justify-center items-center" role="navigation" aria-label="주요 기능">
+            <a href="/center/create"
+               class="action-button register-button w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-red-500/25"
+               role="button"
+               aria-describedby="register-desc">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                <span>경로당 등록</span>
+                <span id="register-desc" class="sr-only">새로운 경로당 정보를 등록합니다</span>
+            </a>
+
+            <a href="/center/main"
+               class="action-button view-button w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-teal-500 to-green-500 hover:from-teal-600 hover:to-green-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-teal-500/25"
+               role="button"
+               aria-describedby="view-desc">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                </svg>
+                <span>지역별로 보기</span>
+                <span id="view-desc" class="sr-only">지역별 경로당 목록을 확인합니다</span>
+            </a>
+        </nav>
+
+        
+    </main>
+</div>
+
+<!-- 숨겨진 입력 필드 (기존 로직 유지) -->
+<input type="hidden" id="latitude" value="37.4327975184208">
+<input type="hidden" id="longitude" value="127.135334242589">
+
+<!-- Thymeleaf 데이터 스크립트 (기존 유지) -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const locations = [];
+    /*[# th:each="loc : ${locations}"]*/
+    locations.push({
+        id: /*[[${loc.id}]]*/ 0,
+        name: /*[[${loc.locationName.locationName}]]*/ '',
+        tel: /*[[${loc.locationNumber.locationNumber}]]*/ '',
+        address: /*[[${loc.locationAddress.address}]]*/ '',
+        lat: /*[[${loc.latitude.latitude}]]*/ 0.0,
+        lng: /*[[${loc.longitude.longitude}]]*/ 0.0
+    });
+    /*[/]*/
+    /*]]>*/
+</script>
+
+<!-- 네이버 지도 초기화 스크립트 (기존 로직 유지) -->
+<script>
+    // 페이지 로딩 성능 개선을 위한 지연 실행
+    function initializeMap() {
+    const fallbackLat = parseFloat(document.getElementById('latitude')?.value || 37.43277127900226);
+    const fallbackLng = parseFloat(document.getElementById('longitude')?.value || 127.13535159554888);
+
+        // 지도 초기화
+    const map = new naver.maps.Map('map', {
+        center: new naver.maps.LatLng(fallbackLat, fallbackLng),
+            zoom: 13,
+            mapTypeControl: true,
+            mapTypeControlOptions: {
+                style: naver.maps.MapTypeControlStyle.BUTTON,
+                position: naver.maps.Position.TOP_RIGHT
+            },
+            zoomControl: true,
+            zoomControlOptions: {
+                style: naver.maps.ZoomControlStyle.SMALL,
+                position: naver.maps.Position.RIGHT_BOTTOM
+            }
+        });
+
+        // 정보창 및 경계 설정
+        const infoWindow = new naver.maps.InfoWindow({
+            anchorSkew: true,
+            anchorSize: new naver.maps.Size(30, 30),
+            borderColor: "#007bff",
+            borderWidth: 2,
+            disableAnchor: false,
+            backgroundColor: "rgba(255, 255, 255, 0.95)",
+            pixelOffset: new naver.maps.Point(0, -10)
+        });
+
+    const bounds = new naver.maps.LatLngBounds();
+    // 지역별 그라디언트 테마 (주소 문자열 기준)
+    function getAreaTheme(address){
+        const addr = (address || '').toString();
+        if(addr.includes('수정구')) return { gradient: 'linear-gradient(135deg, #DD164B 0%, #FF6B8A 100%)', accent: '#DD164B' };
+        if(addr.includes('분당구')) return { gradient: 'linear-gradient(135deg, #0175C0 0%, #49A7F2 100%)', accent: '#0175C0' };
+        if(addr.includes('중원구')) return { gradient: 'linear-gradient(135deg, #F8AC59 0%, #FFC98A 100%)', accent: '#F8AC59' };
+        return { gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', accent: '#667eea' };
+    }
+        let markers = [];
+
+        // 마커 생성 및 이벤트 리스너 등록
+        (locations || []).forEach((item, index) => {
+        const lat = Number(item.lat);
+        const lng = Number(item.lng);
+
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+        const position = new naver.maps.LatLng(lat, lng);
+        const theme = getAreaTheme(item.address);
+
+            // 커스텀 마커 아이콘
+        const marker = new naver.maps.Marker({
+            position,
+            map,
+                title: item.name || '',
+                icon: {
+                    content: `
+                            <div style="
+                                background: ${theme.gradient};
+                                border: 3px solid white;
+                                border-radius: 50%;
+                                width: 30px;
+                                height: 30px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                                cursor: pointer;
+                                transition: all 0.3s ease;
+                            " onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">
+                                <svg width="16" height="16" fill="white" viewBox="0 0 24 24">
+                                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                                </svg>
+                            </div>
+                        `,
+                    size: new naver.maps.Size(30, 30),
+                    anchor: new naver.maps.Point(15, 15)
+                },
+                zIndex: 100 + index
+            });
+
+            markers.push(marker);
+
+            // 정보창 HTML 개선
+        const html = `
+                    <div style="
+                        min-width: 200px; 
+                        max-width: 280px; 
+                        padding: 16px;
+                        font-family: 'Noto Sans KR', sans-serif;
+                        line-height: 1.5;
+                    ">
+                        <div style="
+                            font-weight: 700; 
+                            font-size: 16px; 
+                            color: #2d3748; 
+                            margin-bottom: 8px;
+                            border-bottom: 2px solid ${theme.accent};
+                            padding-bottom: 6px;
+                        ">${item.name || ''}</div>
+                        <div style="
+                            font-size: 13px; 
+                            color: #4a5568; 
+                            margin-bottom: 6px;
+                            display: flex;
+                            align-items: flex-start;
+                        ">
+                            <svg width="14" height="14" style="margin-right: 6px; margin-top: 2px; flex-shrink: 0;" fill="${theme.accent}" viewBox="0 0 24 24">
+                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                            </svg>
+                            <span>${item.address || ''}</span>
+                        </div>
+                        ${item.tel ? `
+                        <div style="
+                            font-size: 13px; 
+                            color: ${theme.accent}; 
+                            font-weight: 500;
+                            display: flex;
+                            align-items: center;
+                        ">
+                            <svg width="14" height="14" style="margin-right: 6px;" fill="${theme.accent}" viewBox="0 0 24 24">
+                                <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                            </svg>
+                            <a href="tel:${item.tel}" style="color: inherit; text-decoration: none;">${item.tel}</a>
+                        </div>
+                        ` : ''}
+            </div>
+        `;
+
+            // 마커 클릭 이벤트
+        naver.maps.Event.addListener(marker, 'click', () => {
+            infoWindow.setContent(html);
+            infoWindow.open(map, marker);
+
+                // 마커 중심으로 지도 이동 (부드러운 애니메이션)
+                map.panTo(position, {
+                    duration: 500,
+                    easing: 'easeOutQuad'
+                });
+            });
+
+            // 마커 호버 효과
+            naver.maps.Event.addListener(marker, 'mouseover', () => {
+                marker.setZIndex(1000);
+            });
+
+            naver.maps.Event.addListener(marker, 'mouseout', () => {
+                marker.setZIndex(100 + index);
+        });
+
+        bounds.extend(position);
+    });
+
+        // 지도 경계 설정 (모든 마커가 보이도록)
+        if (bounds && bounds.getMin && bounds.getMax) {
+            const min = bounds.getMin();
+            const max = bounds.getMax();
+
+            if (min.lat() !== max.lat() || min.lng() !== max.lng()) {
+                map.fitBounds(bounds, {
+                    padding: { top: 50, right: 50, bottom: 50, left: 50 }
+                });
+            }
+        }
+
+        // 지도 클릭 시 정보창 닫기
+        naver.maps.Event.addListener(map, 'click', () => {
+            infoWindow.close();
+        });
+
+        // 전역으로 지도 객체 노출 (디버깅용)
+        window.naverMap = map;
+        window.map = map;
+        window.mapMarkers = markers;
+        window.mapInfoWindow = infoWindow;
+
+        console.log(`지도 초기화 완료: ${markers.length}개의 마커가 생성되었습니다.`);
+        
+        // 초기 렌더 보정: 리사이즈 트리거 및 재센터링
+        setTimeout(() => {
+            try {
+                naver.maps.Event.trigger(map, 'resize');
+                map.setCenter(new naver.maps.LatLng(fallbackLat, fallbackLng));
+            } catch (e) {}
+        }, 250);
+    }
+
+    // 네이버 지도 API 로딩 확인 후 초기화
+    function checkNaverMapsAPI() {
+        if (typeof naver !== 'undefined' && naver.maps) {
+            initializeMap();
+        } else {
+            setTimeout(checkNaverMapsAPI, 100);
+        }
+    }
+
+    // 페이지 로드 후 지도 초기화
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', checkNaverMapsAPI);
+    } else {
+        checkNaverMapsAPI();
+    }
+</script>
+
+<!-- Menu Bar JS -->
+<script defer th:src="@{/center-skin/menu-bar.js}"></script>
+<!-- Search Bar JS -->
+<script defer th:src="@{/center-skin/search-bar.js}"></script>
+<!-- Custom JavaScript - Vue 애니메이션 (지연 로딩) -->
+<script defer th:src="@{/center-skin/index.js}"></script>
+
+<!-- Google Analytics 또는 기타 분석 스크립트 (필요한 경우) -->
+<!-- <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script> -->
+
+<!-- 성능 최적화: Intersection Observer를 사용한 지연 로딩 -->
+<script>
+    // 이미지 지연 로딩 (필요한 경우)
+    if ('IntersectionObserver' in window) {
+        const imageObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    if (img.dataset.src) {
+                        img.src = img.dataset.src;
+                        img.classList.remove('lazy');
+                        imageObserver.unobserve(img);
+                    }
+                }
+            });
+        });
+
+        document.querySelectorAll('img[data-src]').forEach(img => {
+            imageObserver.observe(img);
+        });
+    }
+
+    // 웹 성능 최적화: Critical Resource Hints
+    const prefetchResources = () => {
+        const links = [
+            '/center/create',
+            '/center/main'
+        ];
+
+        links.forEach(link => {
+            const prefetchLink = document.createElement('link');
+            prefetchLink.rel = 'prefetch';
+            prefetchLink.href = link;
+            document.head.appendChild(prefetchLink);
+        });
+    };
+
+    // 사용자 상호작용 후 prefetch 실행
+    ['mouseenter', 'touchstart'].forEach(event => {
+        document.addEventListener(event, prefetchResources, { once: true, passive: true });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>경로당 위치 | 성남시 노인센터 검색</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Animation Library -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    
+    <!-- Center Locate Skin -->
+    <link rel="stylesheet" th:href="@{/center-skin/center-locate.css}">
+
+    <script th:src="@{'https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=742tyl7pxy'}"
+            type="text/javascript"></script>
+    <link rel="stylesheet" th:href="@{/center-skin/menu-bar.css}">
+</head>
+<body>
+<div th:replace="common/menu-bar :: menuBar"></div>
+
+<div class="bg-overlay">
+<div class="container">
+    <a href="/center/choose/locate" class="back-btn">← 다시 선택하기</a>
+
+    <div class="header">
+        <h1>선택한 경로당 위치</h1>
+    </div>
+
+    <div class="selected-info">
+        <strong>총 <span th:text="${#lists.size(vm)}">0</span>개의 경로당이 선택되었습니다.</strong>
+    </div>
+
+    <div class="map-container">
+        <div id="map"></div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color legend-sujeong"></div>
+                <span>수정구</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color legend-bundang"></div>
+                <span>분당구</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color legend-jungwon"></div>
+                <span>중원구</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 선택된 경로당 목록 -->
+    <div class="center-list" th:if="${vm != null and !#lists.isEmpty(vm)}">
+        <div th:each="center : ${vm}" class="center-item" th:onclick="'focusOnMarker(' + ${center.locationId} + ')'">
+            <div style="display: flex; align-items: center;">
+                <div class="district-indicator"
+                     th:classappend="${center.locationAddress.address.contains('수정구')} ? 'legend-sujeong' :
+                                        (${center.locationAddress.address.contains('분당구')} ? 'legend-bundang' :
+                                        (${center.locationAddress.address.contains('중원구')} ? 'legend-jungwon' : ''))"></div>
+                <div>
+                    <div class="center-name" th:text="${center.locationName.locationName}">경로당 이름</div>
+                    <div class="center-address" th:text="${center.locationAddress.address}">주소</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 타임리프로 JavaScript 변수에 데이터 바인딩 -->
+    <script th:inline="javascript">
+        const centerData = /*[[${vm}]]*/ [];
+    </script>
+</div>
+</div>
+
+<script>
+    let map;
+    let markers = [];
+    let infoWindows = [];
+
+    // 지역별 그라디언트 테마 (인덱스 페이지와 동일)
+    function getAreaTheme(address){
+        const addr = (address || '').toString();
+        if(addr.includes('수정구')) return { gradient: 'linear-gradient(135deg, #DD164B 0%, #FF6B8A 100%)', accent: '#DD164B' };
+        if(addr.includes('분당구')) return { gradient: 'linear-gradient(135deg, #0175C0 0%, #49A7F2 100%)', accent: '#0175C0' };
+        if(addr.includes('중원구')) return { gradient: 'linear-gradient(135deg, #F8AC59 0%, #FFC98A 100%)', accent: '#F8AC59' };
+        return { gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', accent: '#667eea' };
+    }
+
+    function focusOnMarker(locationId) {
+        const center = centerData.find(c => c.locationId === locationId);
+        if (center && map) {
+            const position = new naver.maps.LatLng(
+                center.latitude.latitude,
+                center.longitude.longitude
+            );
+            map.setCenter(position);
+            map.setZoom(17);
+
+            // 해당 마커의 정보창 열기
+            const marker = markers.find(m => m.locationId === locationId);
+            if (marker && marker.infoWindow) {
+                // 다른 정보창들 모두 닫기
+                infoWindows.forEach(iw => iw.close());
+                marker.infoWindow.open(map, marker);
+            }
+        }
+    }
+
+    function initMap() {
+        if (!centerData || centerData.length === 0) {
+            document.getElementById('map').innerHTML =
+                '<div style="height: 600px; display: flex; align-items: center; justify-content: center; color: #999;">선택된 경로당이 없습니다.</div>';
+            return;
+        }
+
+        // 첫 번째 좌표를 중심으로 지도 생성
+        const firstCenter = centerData[0];
+        map = new naver.maps.Map('map', {
+            center: new naver.maps.LatLng(
+                firstCenter.latitude.latitude,
+                firstCenter.longitude.longitude
+            ),
+            zoom: 12,
+            mapTypeControl: true,
+            mapTypeControlOptions: {
+                style: naver.maps.MapTypeControlStyle.BUTTON,
+                position: naver.maps.Position.TOP_RIGHT
+            },
+            zoomControl: true,
+            zoomControlOptions: {
+                style: naver.maps.ZoomControlStyle.SMALL,
+                position: naver.maps.Position.RIGHT_BOTTOM
+            }
+        });
+
+        const bounds = new naver.maps.LatLngBounds();
+
+        // 각 경로당마다 마커 생성 (인덱스 페이지와 동일한 구조)
+        centerData.forEach((center, index) => {
+            const lat = center.latitude.latitude;
+            const lng = center.longitude.longitude;
+            const position = new naver.maps.LatLng(lat, lng);
+            const address = center.locationAddress.address;
+            const theme = getAreaTheme(address);
+
+            // 커스텀 마커 아이콘 (인덱스 페이지와 완전 동일)
+            const marker = new naver.maps.Marker({
+                position,
+                map,
+                title: center.locationName.locationName || '',
+                icon: {
+                    content: `
+                            <div style="
+                                background: ${theme.gradient};
+                                border: 3px solid white;
+                                border-radius: 50%;
+                                width: 30px;
+                                height: 30px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                                cursor: pointer;
+                                transition: all 0.3s ease;
+                            " onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">
+                                <svg width="16" height="16" fill="white" viewBox="0 0 24 24">
+                                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                                </svg>
+                            </div>
+                        `,
+                    size: new naver.maps.Size(30, 30),
+                    anchor: new naver.maps.Point(15, 15)
+                },
+                zIndex: 100 + index
+            });
+
+            // locationId 추가
+            marker.locationId = center.locationId;
+
+            // 정보창 HTML 개선 (인덱스 페이지와 동일)
+            const infoWindow = new naver.maps.InfoWindow({
+                content: `
+                        <div style="
+                            min-width: 200px;
+                            max-width: 280px;
+                            padding: 16px;
+                            font-family: 'Noto Sans KR', sans-serif;
+                            line-height: 1.5;
+                        ">
+                            <div style="
+                                font-weight: 700;
+                                font-size: 16px;
+                                color: #2d3748;
+                                margin-bottom: 8px;
+                                border-bottom: 2px solid ${theme.accent};
+                                padding-bottom: 6px;
+                            ">${center.locationName.locationName}</div>
+                            <div style="
+                                font-size: 13px;
+                                color: #4a5568;
+                                margin-bottom: 6px;
+                                display: flex;
+                                align-items: flex-start;
+                            ">
+                                <svg width="14" height="14" style="margin-right: 6px; margin-top: 2px; flex-shrink: 0;" fill="${theme.accent}" viewBox="0 0 24 24">
+                                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                                </svg>
+                                <span>${center.locationAddress.address}</span>
+                            </div>
+                        </div>
+                    `,
+                anchorSkew: true,
+                anchorSize: new naver.maps.Size(30, 30),
+                borderColor: theme.accent,
+                borderWidth: 2,
+                backgroundColor: "rgba(255, 255, 255, 0.95)",
+                pixelOffset: new naver.maps.Point(0, -10)
+            });
+
+            // 마커에 정보창 연결
+            marker.infoWindow = infoWindow;
+
+            // 마커 클릭 이벤트 (인덱스 페이지와 동일)
+            naver.maps.Event.addListener(marker, 'click', function() {
+                // 다른 정보창들 모두 닫기
+                infoWindows.forEach(iw => iw.close());
+
+                if (infoWindow.getMap()) {
+                    infoWindow.close();
+                } else {
+                    infoWindow.open(map, marker);
+                }
+
+                // 마커 중심으로 지도 이동 (부드러운 애니메이션)
+                map.panTo(position, {
+                    duration: 500,
+                    easing: 'easeOutQuad'
+                });
+            });
+
+            // 마커 호버 효과
+            naver.maps.Event.addListener(marker, 'mouseover', function() {
+                marker.setZIndex(1000);
+            });
+
+            naver.maps.Event.addListener(marker, 'mouseout', function() {
+                marker.setZIndex(100 + index);
+            });
+
+            // 배열에 저장
+            markers.push(marker);
+            infoWindows.push(infoWindow);
+
+            // bounds에 좌표 추가
+            bounds.extend(position);
+        });
+
+        // 지도 경계 설정 (모든 마커가 보이도록)
+        if (centerData.length > 1) {
+            map.fitBounds(bounds, {
+                padding: { top: 50, right: 50, bottom: 50, left: 50 }
+            });
+            // fitBounds 후 너무 확대될 경우 최대 줌 제한
+            setTimeout(() => {
+                if (map.getZoom() > 16) {
+                    map.setZoom(16);
+                }
+            }, 100);
+        } else {
+            // 마커가 1개면 적당한 줌 레벨로 설정
+            map.setZoom(15);
+        }
+
+        // 지도 클릭 시 정보창 닫기
+        naver.maps.Event.addListener(map, 'click', function() {
+            infoWindows.forEach(iw => iw.close());
+        });
+
+        // 전역 변수로 노출
+        window.naverLocateMap = map;
+        window.mapMarkers = markers;
+
+        console.log(`지도 초기화 완료: ${markers.length}개의 마커가 생성되었습니다.`);
+    }
+
+    // 페이지 로드 시 지도 초기화
+    window.addEventListener('load', initMap);
+
+    // 윈도우 리사이즈 시 지도 크기 재조정
+    window.addEventListener('resize', function() {
+        if (window.naverLocateMap) {
+            setTimeout(() => {
+                window.naverLocateMap.refresh();
+            }, 100);
+        }
+    });
+</script>
+
+<!-- Center Locate JavaScript -->
+<script defer th:src="@{/center-skin/center-locate.js}"></script>
+<script th:src="@{/center-skin/menu-bar.js}"></script>
+</body>
+</html>

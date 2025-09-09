@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>출발지 선택 | 성남시 노인센터 검색</title>
+  
+  <!-- Preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Animation Library -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  
+  <!-- Center Start Skin -->
+  <link rel="stylesheet" th:href="@{/center-skin/center-start.css}">
+  <link rel="stylesheet" th:href="@{/center-skin/menu-bar.css}">
+</head>
+<body>
+<div th:replace="common/menu-bar :: menuBar"></div>
+
+<div class="bg-overlay">
+  <div class="container">
+    <div class="header">
+      <h1>출발지 선택</h1>
+      <p>경로 계획의 첫 번째 단계입니다. 출발할 위치를 선택해주세요.</p>
+    </div>
+
+    <div class="content">
+      <form id="startForm">
+        <div th:each="entry : ${vm}">
+          <div class="region-group">
+            <div class="region-title" th:text="${entry.key}"></div>
+
+            <div class="location-grid" th:if="${not #lists.isEmpty(entry.value)}">
+              <label class="location-item" th:each="location : ${entry.value}">
+                <input type="radio"
+                       name="selectedLocation"
+                       th:value="${location.longitude().getLongitude() + ',' + location.latitude().getLatitude()}"
+                       th:data-name="${location.locationName().getLocationName()}"
+                       onchange="updateSubmitButton()">
+                <div class="location-info">
+                  <div class="location-name" th:text="${location.locationName().getLocationName()}"></div>
+                  <div class="location-address" th:text="${location.locationAddress().getAddress()}"></div>
+                </div>
+              </label>
+            </div>
+
+            <div class="no-locations" th:if="${#lists.isEmpty(entry.value)}">
+              이 지역에는 등록된 위치가 없습니다.
+            </div>
+          </div>
+        </div>
+
+        <div class="submit-section">
+          <button type="button" id="nextBtn" class="btn-next" onclick="goToWaypoints()" disabled>
+            경유지 선택하기
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Center Start JavaScript -->
+<script defer th:src="@{/center-skin/center-start.js}"></script>
+<script th:src="@{/center-skin/menu-bar.js}"></script>
+</body>
+</html>

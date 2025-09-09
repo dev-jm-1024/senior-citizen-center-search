@@ -1,0 +1,556 @@
+/* Center Choose Locate - Consistent with main design */
+
+/****************************
+  Base Variables
+*****************************/
+:root {
+  --primary: #667eea;
+  --primary-deep: #4c51bf;
+  --accent: #764ba2;
+  --glass: rgba(255, 255, 255, 0.95);
+  --glass-border: rgba(255, 255, 255, 0.25);
+  --shadow-1: 0 10px 20px rgba(0,0,0,0.12);
+  --shadow-2: 0 20px 40px rgba(0,0,0,0.16);
+
+  /* District Colors */
+  --sujeong: #DD164B;
+  --bundang: #0175C0;
+  --jungwon: #F8AC59;
+}
+
+html, body {
+  height: 100%;
+  /* 🔧 FIX: 메뉴바로 인한 가로 밀림 방지 */
+  overflow-x: hidden;
+}
+
+body {
+  background-image: url('https://plusb3b.kr/center-img/bg-filter.png');
+  background-size: cover;
+  background-position: center center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  margin: 0;
+  padding: 0;
+  font-family: 'Noto Sans KR', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #111827;
+  /* 초기 로딩 안정화 */
+  visibility: visible;
+  opacity: 1;
+}
+
+.bg-overlay {
+  min-height: 100vh;
+  background: linear-gradient(135deg, rgba(0,0,0,0.15), rgba(0,0,0,0.10) 50%, rgba(0,0,0,0.15));
+  padding: 24px 0;
+}
+
+.main-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/****************************
+  Menu Bar 여백 처리
+*****************************/
+/* PC에서는 메뉴바가 오른쪽 상단에 고정 */
+@media (min-width: 769px) {
+  .main-container {
+    padding-top: 100px; /* 메뉴바 높이 + 여백 고려 */
+    /* 🔧 FIX: 메뉴바와의 충돌 방지를 위한 오른쪽 여백 추가 */
+    padding-right: 120px;
+  }
+}
+
+/* 모바일에서는 메뉴바가 하단에 고정 */
+@media (max-width: 768px) {
+  .main-container {
+    padding-bottom: 120px; /* 하단 메뉴바를 위한 여백 */
+  }
+}
+
+/* no-menu-padding 클래스 정의 (HTML에서 사용 중) */
+.no-menu-padding {
+  /* 기본 패딩은 유지하되, 메뉴바와의 충돌만 방지 */
+  position: relative;
+}
+
+/****************************
+  Header
+*****************************/
+.page-title {
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #fff;
+  margin-bottom: 40px;
+  text-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/****************************
+  District Cards
+*****************************/
+.district {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-2);
+  backdrop-filter: blur(10px);
+  /* 초기 상태 안정화 */
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+  /* 조건부 애니메이션 */
+  animation: slideInUp 0.6s ease-out forwards;
+}
+
+.district:nth-child(1) { animation-delay: 0.1s; }
+.district:nth-child(2) { animation-delay: 0.2s; }
+.district:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes slideInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.district h2 {
+  margin: 0 0 20px 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  padding-bottom: 12px;
+  border-bottom: 3px solid;
+  position: relative;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* District-specific colors */
+.district.sujeong h2 {
+  color: var(--sujeong);
+  border-color: var(--sujeong);
+}
+
+.district.bundang h2 {
+  color: var(--bundang);
+  border-color: var(--bundang);
+}
+
+.district.jungwon h2 {
+  color: var(--jungwon);
+  border-color: var(--jungwon);
+}
+
+/****************************
+  Center List
+*****************************/
+.center-list {
+  max-height: 350px;
+  overflow-y: auto;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  /* 레이아웃 흔들림 방지: 스크롤바 공간을 항상 확보 */
+  scrollbar-gutter: stable both-edges;
+  /* 가로 폭 고정 안전장치 */
+  box-sizing: border-box;
+  width: 100%;
+  overscroll-behavior: contain;
+}
+
+/* Enhanced Scrollbar */
+.center-list::-webkit-scrollbar {
+  width: 12px;
+}
+
+.center-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 4px;
+}
+
+.center-list::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  box-shadow:
+          0 2px 4px rgba(0, 0, 0, 0.1),
+          0 0 0 1px rgba(99, 102, 241, 0.2) inset;
+}
+
+.center-list::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  box-shadow:
+          0 4px 8px rgba(0, 0, 0, 0.2),
+          0 0 0 1px rgba(99, 102, 241, 0.3) inset;
+  transform: scale(1.05);
+}
+
+.center-list::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(135deg, #4338ca, #6d28d9);
+  transform: scale(0.95);
+}
+
+/* Firefox 스크롤바 */
+.center-list {
+  scrollbar-width: auto;
+  scrollbar-color: #6366f1 rgba(255, 255, 255, 0.2);
+}
+
+/****************************
+  Center Items
+*****************************/
+.center-item {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(15px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.center-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.center-item:hover {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.center-item:hover::before {
+  left: 100%;
+}
+
+.center-item:last-child {
+  margin-bottom: 0;
+}
+
+.center-item.selected {
+  background: rgba(102, 126, 234, 0.2);
+  border-color: rgba(102, 126, 234, 0.4);
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3);
+}
+
+/****************************
+  Enhanced Checkbox
+*****************************/
+.center-checkbox {
+  margin-right: 16px;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid #6366f1;
+  background: rgba(255, 255, 255, 0.95);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  appearance: none;
+  -webkit-appearance: none;
+  box-shadow:
+          0 2px 4px rgba(0, 0, 0, 0.1),
+          0 0 0 1px rgba(99, 102, 241, 0.2) inset;
+  flex-shrink: 0;
+}
+
+.center-checkbox:checked {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-color: #6366f1;
+  box-shadow:
+          0 0 0 3px rgba(99, 102, 241, 0.3),
+          0 4px 12px rgba(99, 102, 241, 0.4);
+  transform: scale(1.05);
+}
+
+.center-checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  color: white;
+  font-size: 14px;
+  font-weight: 900;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  animation: checkmarkPop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes checkmarkPop {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+.center-checkbox:hover {
+  border-color: #4f46e5;
+  background: rgba(255, 255, 255, 1);
+  box-shadow:
+          0 4px 8px rgba(0, 0, 0, 0.15),
+          0 0 0 2px rgba(99, 102, 241, 0.3) inset;
+  transform: scale(1.02);
+}
+
+.center-checkbox:focus {
+  outline: none;
+  box-shadow:
+          0 0 0 3px rgba(99, 102, 241, 0.4),
+          0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+/****************************
+  Center Info
+*****************************/
+.center-info {
+  flex-grow: 1;
+  color: #1f2937;
+}
+
+.center-name {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 6px;
+  color: #1f2937;
+  text-shadow: none;
+}
+
+.center-address {
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.4;
+  text-shadow: none;
+}
+
+/****************************
+  Confirm Button
+*****************************/
+.confirm-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 18px 32px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: #fff;
+  font-weight: 700;
+  font-size: 16px;
+  text-decoration: none;
+  border: 0;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 10px 24px rgba(102, 126, 234, 0.35);
+  overflow: hidden;
+  margin-top: 32px;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: slideInUp 0.6s ease-out 0.5s forwards;
+}
+
+.confirm-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.confirm-btn:hover {
+  background: linear-gradient(135deg, var(--primary-deep), #6d28d9);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+}
+
+.confirm-btn:hover::before {
+  left: 100%;
+}
+
+.confirm-btn:active {
+  transform: translateY(-1px) scale(0.99);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.confirm-btn:disabled {
+  background: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/****************************
+  Selected Count
+*****************************/
+.selected-count {
+  text-align: center;
+  margin-top: 16px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  opacity: 0;
+  transform: translateY(10px);
+  animation: slideInUp 0.6s ease-out 0.6s forwards;
+}
+
+/****************************
+  Ripple Effect
+*****************************/
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.4);
+  pointer-events: none;
+  transform: scale(0);
+  mix-blend-mode: screen;
+  width: 0;
+  height: 0;
+}
+
+/****************************
+  Responsive
+*****************************/
+@media (max-width: 768px) {
+  .main-container {
+    padding: 16px;
+    padding-bottom: 120px; /* 하단 메뉴바 여백 증가 */
+    /* 🔧 FIX: 모바일에서는 오른쪽 여백 제거 */
+    padding-right: 16px !important;
+  }
+
+  .page-title {
+    font-size: 2rem;
+    margin-bottom: 24px;
+  }
+
+  .district {
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .center-list {
+    max-height: 280px;
+  }
+
+  .center-item {
+    padding: 14px;
+  }
+
+  .confirm-btn {
+    padding: 16px 28px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-container {
+    padding-bottom: 140px; /* 소형 모바일에서 더 많은 여백 */
+    /* 🔧 FIX: 소형 모바일에서도 오른쪽 여백 제거 */
+    padding-right: 16px !important;
+  }
+
+  .page-title {
+    font-size: 1.75rem;
+  }
+
+  .district {
+    padding: 16px;
+  }
+
+  .center-item {
+    padding: 12px;
+  }
+
+  .center-name {
+    font-size: 15px;
+  }
+
+  .center-address {
+    font-size: 13px;
+  }
+}
+
+/****************************
+  Layout Stability & Performance
+*****************************/
+/* 레이아웃 시프트 방지 */
+.center-item, .center-info, .center-name, .center-address {
+  will-change: auto;
+  contain: layout;
+}
+
+.center-list {
+  contain: layout style;
+  overflow-anchor: auto;
+}
+
+/* 초기 로딩 상태 강제 안정화 */
+.main-container {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(0) !important;
+}
+
+.district {
+  /* 기본 상태를 안정화하되 애니메이션 유지 */
+  min-height: auto;
+}
+
+/* 모션 감소 설정 대응 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .district {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    animation: none !important;
+  }
+
+  .center-item {
+    opacity: 1 !important;
+    transform: translateY(0) translateX(0) !important;
+  }
+}

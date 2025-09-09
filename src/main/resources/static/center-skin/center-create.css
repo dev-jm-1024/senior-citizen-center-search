@@ -1,0 +1,145 @@
+/* Center Create Page - Simple Consistent Theme */
+
+:root {
+  --primary: #667eea;
+  --accent: #764ba2;
+  --glass: rgba(255, 255, 255, 0.95);
+  --glass-border: rgba(255, 255, 255, 0.25);
+  --shadow-1: 0 10px 20px rgba(0,0,0,0.12);
+}
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: 'Noto Sans KR', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #111827;
+  background-image: url('https://plusb3b.kr/center-img/bg-filter.png');
+  background-size: cover;
+  background-position: center center;
+  background-attachment: fixed;
+}
+
+.page-wrap {
+  min-height: 100vh;
+  background: linear-gradient(135deg, rgba(0,0,0,0.15), rgba(0,0,0,0.10) 50%, rgba(0,0,0,0.15));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.form-container {
+  width: 100%;
+  max-width: 640px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: var(--shadow-1);
+}
+
+h2 {
+  margin: 0 0 20px 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(90deg, #111827, #4b5563);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-align: center;
+}
+
+.form-group { margin-bottom: 16px; }
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #374151;
+}
+
+input[type="text"] {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  font-size: 14px;
+  background: #fff;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  box-sizing: border-box;
+}
+input[type="text"]:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+}
+
+.address-group { display: flex; gap: 10px; align-items: center; }
+.address-input { flex: 1; }
+
+.btn {  
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
+  border-radius: 9999px;
+  border: 0;
+  cursor: pointer;
+  color: #fff;
+  font-weight: 600;
+  background-size: 200% 200%;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-position 0.4s ease;
+  box-shadow: 0 10px 22px rgba(0,0,0,0.12);
+}
+
+.search-btn { background: linear-gradient(135deg, #14b8a6, #16a34a); }
+.submit-btn { background: linear-gradient(135deg, #38bdf8, #2563eb); }
+
+.btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  background-position: 100% 50%;
+  box-shadow: 0 16px 28px rgba(0,0,0,0.16);
+}
+.btn:active { transform: translateY(-1px) scale(0.995); }
+
+/* Individual hover color tweaks */
+.search-btn:hover { background: linear-gradient(135deg, #2dd4bf, #059669); }
+.submit-btn:hover { background: linear-gradient(135deg, #0ea5e9, #1d4ed8); }
+
+/* Actions row to place submit/cancel side by side */
+.create-actions-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 12px;
+}
+.create-actions-row .btn { height: 44px; }
+.cancel-btn { background: linear-gradient(135deg, #9ca3af, #6b7280); }
+.cancel-btn:hover { filter: brightness(1.05); }
+
+/* Focus visible for accessibility */
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.25), 0 12px 24px rgba(0,0,0,0.12);
+}
+
+/* Ripple element injected by JS */
+.btn .ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.35);
+  pointer-events: none;
+  transform: scale(0);
+}
+
+/* Simple fade-in */
+.page-enter { opacity: 0; transform: translateY(10px); }
+.page-enter-active { opacity: 1; transform: translateY(0); transition: all 450ms ease; }
+
+/* Responsive */
+@media (max-width: 480px) {
+  .form-container { padding: 22px; }
+}

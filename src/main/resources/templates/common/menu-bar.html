@@ -1,0 +1,8 @@
+<!--menu-frag-->
+<div class="menu-btn-group" th:fragment="menuBar" role="navigation" aria-label="페이지 네비게이션">
+    <button type="button" onclick="history.back()" id="back-btn" aria-label="이전 페이지로 돌아가기"></button>
+    <button type="button" onclick="window.location.href='/'" id="home-btn" aria-label="홈페이지로 이동"></button>
+    <button type="button" onclick="window.location.href='/center/create'" id="create-btn" aria-label="경로당 등록 페이지로 이동"></button>
+    <button type="button" onclick="window.location.href='/center/choose/locate'" id="view-locate" aria-label="경로당 위치 한 번에 보기"></button>
+    <button type="button" onclick="window.location.href='/center/nav/start'" id="nav-btn" aria-label="경로당 네비게이션"></button>
+</div>

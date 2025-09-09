@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>도착지 선택 | 성남시 노인센터 검색</title>
+    
+    <!-- Preconnect, Google Fonts, Animation Library -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    
+    <!-- Center Goal Skin -->
+    <link rel="stylesheet" th:href="@{/center-skin/center-goal.css}">
+    <link rel="stylesheet" th:href="@{/center-skin/menu-bar.css}">
+</head>
+<body>
+
+<div th:replace="common/menu-bar :: menuBar"></div>
+
+<div class="bg-overlay">
+    <div class="container">
+        <div class="header">
+            <h1>도착지 선택</h1>
+            <p>최종 목적지를 선택하여 경로 검색을 완료해주세요.</p>
+        </div>
+
+        <!-- 경로 요약 -->
+        <div class="route-summary">
+            <div class="route-item">
+                <div class="route-icon start-icon">🚀</div>
+                <div class="route-text" th:text="'출발지: ' + ${hidden.startName}">출발지: 홍대입구역</div>
+            </div>
+
+            <div th:if="${hidden.wayPointNames != null and hidden.wayPointNames != '' and hidden.wayPointNames != 'null'}" class="route-item">
+                <div class="route-icon waypoint-icon">🛤️</div>
+                <div class="route-text" th:text="'경유지: ' + ${#strings.replace(hidden.wayPointNames, '|', ' → ')}">
+                    경유지: 강남역 → 서울역
+                </div>
+            </div>
+
+            <div class="route-item">
+                <div class="route-icon goal-icon">🎯</div>
+                <div class="route-text">도착지: 선택해주세요</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <form id="goalForm">
+                <!-- 이전 단계 데이터 보존 -->
+                <input type="hidden" name="start" th:value="${hidden.start}" />
+                <input type="hidden" name="startName" th:value="${hidden.startName}" />
+                <input type="hidden" name="waypoints" th:value="${hidden.wayPoints}" />
+                <input type="hidden" name="waypointNames" th:value="${hidden.wayPointNames}" />
+
+                <div th:each="entry : ${vm}">
+                    <div class="region-group">
+                        <div class="region-title" th:text="${entry.key}"></div>
+
+                        <div class="location-grid" th:if="${!#lists.isEmpty(entry.value)}">
+                            <label class="location-item" th:each="location : ${entry.value}" onclick="enhancedToggleRadio(this)">
+                                <input type="radio"
+                                       name="selectedGoal"
+                                       th:value="${location.longitude.longitude + ',' + location.latitude.latitude}"
+                                       th:data-name="${location.locationName.locationName}"
+                                       onchange="updateGoalSelection()">
+                                <div class="location-info">
+                                    <div class="location-name" th:text="${location.locationName.locationName}"></div>
+                                    <div class="location-address" th:text="${location.locationAddress.address}"></div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="no-locations" th:if="${#lists.isEmpty(entry.value)}">
+                            이 지역에는 등록된 위치가 없습니다.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="submit-section">
+                    <button type="button" id="findRouteBtn" class="btn btn-find-route" onclick="findRoute()">
+                        경로 검색하기
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Center Goal JavaScript -->
+<script defer th:src="@{/center-skin/center-goal.js}"></script>
+<script th:src="@{/center-skin/menu-bar.js}"></script>
+
+</body>
+</html>

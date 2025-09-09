@@ -1,0 +1,492 @@
+/* Menu Bar - Apple Liquid Glass Style (Fixed Layout Issues) */
+
+/****************************
+  Content Spacing for Menu Bar
+*****************************/
+/* 컨텐츠 여백 규칙 제거됨: 페이지별 필요 시 개별 CSS에서 정의하세요 */
+
+/****************************
+  Menu Bar Container
+*****************************/
+.menu-btn-group {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  z-index: 1000;
+
+  /* 🔧 FIX: Layout stability improvements */
+  transform-origin: center center; /* Changed from 'right top' */
+  width: 68px; /* Fixed width to prevent expansion */
+  contain: layout; /* Contain layout changes */
+
+  /* Apple Liquid Glass Effect */
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 20px;
+  box-shadow:
+          0 8px 32px rgba(0, 0, 0, 0.12),
+          0 0 0 0.5px rgba(255, 255, 255, 0.2) inset,
+          0 1px 0 rgba(255, 255, 255, 0.4) inset;
+
+  /* Animation - 🔧 FIX: 가로 밀림 현상 방지 */
+  opacity: 0;
+  transform: translateY(-10px) scale(0.95);
+  animation: slideInFade 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s forwards;
+}
+
+/* 🔧 FIX: Prevent horizontal scroll completely */
+html {
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  /* 세로 스크롤바 등장/사라짐으로 인한 가로 레이아웃 흔들림 방지 */
+  scrollbar-gutter: stable;
+}
+
+body {
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+@keyframes slideInFade {
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/****************************
+  Menu Buttons - Apple Style
+*****************************/
+.menu-btn-group button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(60, 60, 67, 0.85);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(20px);
+  overflow: hidden;
+  min-width: 44px;
+  min-height: 44px;
+  white-space: nowrap;
+  box-shadow:
+          0 1px 3px rgba(0, 0, 0, 0.06),
+          0 0 0 0.5px rgba(255, 255, 255, 0.1) inset;
+
+  /* 🔧 FIX: Prevent layout shift on hover */
+  width: 44px; /* Fixed width */
+  height: 44px; /* Fixed height */
+}
+
+.menu-btn-group button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.menu-btn-group button:hover::before {
+  left: 100%;
+}
+
+/* 🔧 FIX: Reduced scale effect to prevent layout shift */
+#back-btn:hover {
+  background: rgba(255, 255, 255, 0.15) url('https://plusb3b.kr/gamehub-img/back.svg') no-repeat center;
+  background-size: 18px 18px;
+  box-shadow:
+          0 4px 12px rgba(0, 0, 0, 0.1),
+          0 0 0 0.5px rgba(255, 255, 255, 0.2) inset,
+          0 1px 0 rgba(255, 255, 255, 0.3) inset;
+}
+
+#home-btn:hover {
+  background: rgba(255, 255, 255, 0.15) url('https://plusb3b.kr/gamehub-img/home.svg') no-repeat center;
+  background-size: 18px 18px;
+  box-shadow:
+          0 4px 12px rgba(0, 0, 0, 0.1),
+          0 0 0 0.5px rgba(255, 255, 255, 0.2) inset,
+          0 1px 0 rgba(255, 255, 255, 0.3) inset;
+}
+
+#create-btn:hover {
+  background: rgba(255, 255, 255, 0.15) url('https://plusb3b.kr/gamehub-img/insert.svg') no-repeat center;
+  background-size: 18px 18px;
+  box-shadow:
+          0 4px 12px rgba(0, 0, 0, 0.1),
+          0 0 0 0.5px rgba(255, 255, 255, 0.2) inset,
+          0 1px 0 rgba(255, 255, 255, 0.3) inset;
+}
+
+#view-locate:hover {
+  background: rgba(255, 255, 255, 0.15) url('https://plusb3b.kr/gamehub-img/find.svg') no-repeat center;
+  background-size: 18px 18px;
+  box-shadow:
+          0 4px 12px rgba(0, 0, 0, 0.1),
+          0 0 0 0.5px rgba(255, 255, 255, 0.2) inset,
+          0 1px 0 rgba(255, 255, 255, 0.3) inset;
+}
+
+#nav-btn:hover {
+  background: rgba(255, 255, 255, 0.15) url('https://plusb3b.kr/gamehub-img/nav.svg') no-repeat center;
+  background-size: 18px 18px;
+  box-shadow:
+          0 4px 12px rgba(0, 0, 0, 0.1),
+          0 0 0 0.5px rgba(255, 255, 255, 0.2) inset,
+          0 1px 0 rgba(255, 255, 255, 0.3) inset;
+}
+
+#back-btn:active {
+  background: rgba(255, 255, 255, 0.2) url('https://plusb3b.kr/gamehub-img/back.svg') no-repeat center;
+  background-size: 18px 18px;
+  box-shadow:
+          0 2px 8px rgba(0, 0, 0, 0.08),
+          0 0 0 0.5px rgba(255, 255, 255, 0.15) inset;
+}
+
+#home-btn:active {
+  background: rgba(255, 255, 255, 0.2) url('https://plusb3b.kr/gamehub-img/home.svg') no-repeat center;
+  background-size: 18px 18px;
+  box-shadow:
+          0 2px 8px rgba(0, 0, 0, 0.08),
+          0 0 0 0.5px rgba(255, 255, 255, 0.15) inset;
+}
+
+#create-btn:active {
+  background: rgba(255, 255, 255, 0.2) url('https://plusb3b.kr/gamehub-img/insert.svg') no-repeat center;
+  background-size: 18px 18px;
+  box-shadow:
+          0 2px 8px rgba(0, 0, 0, 0.08),
+          0 0 0 0.5px rgba(255, 255, 255, 0.15) inset;
+}
+
+#view-locate:active {
+  background: rgba(255, 255, 255, 0.2) url('https://plusb3b.kr/gamehub-img/find.svg') no-repeat center;
+  background-size: 18px 18px;
+  box-shadow:
+          0 2px 8px rgba(0, 0, 0, 0.08),
+          0 0 0 0.5px rgba(255, 255, 255, 0.15) inset;
+}
+
+#nav-btn:active {
+  background: rgba(255, 255, 255, 0.2) url('https://plusb3b.kr/gamehub-img/nav.svg') no-repeat center;
+  background-size: 18px 18px;
+  box-shadow:
+          0 2px 8px rgba(0, 0, 0, 0.08),
+          0 0 0 0.5px rgba(255, 255, 255, 0.15) inset;
+}
+
+/****************************
+  Button Icon Styles
+*****************************/
+.menu-btn-group button {
+  /* 모든 버튼에 동일한 스타일 적용 */
+  color: rgba(60, 60, 67, 0.85);
+}
+
+.menu-btn-group button:hover {
+  color: rgba(60, 60, 67, 1);
+}
+
+/* 아이콘 전용 스타일 - SVG 배경 이미지 */
+.menu-btn-group button {
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 18px 18px;
+  /* 기존 배경색과 함께 사용 */
+}
+
+#back-btn {
+  background: rgba(255, 255, 255, 0.08) url('https://plusb3b.kr/gamehub-img/back.svg') no-repeat center;
+  background-size: 18px 18px;
+}
+
+#home-btn {
+  background: rgba(255, 255, 255, 0.08) url('https://plusb3b.kr/gamehub-img/home.svg') no-repeat center;
+  background-size: 18px 18px;
+}
+
+#create-btn {
+  background: rgba(255, 255, 255, 0.08) url('https://plusb3b.kr/gamehub-img/insert.svg') no-repeat center;
+  background-size: 18px 18px;
+}
+
+#view-locate {
+  background: rgba(255, 255, 255, 0.08) url('https://plusb3b.kr/gamehub-img/find.svg') no-repeat center;
+  background-size: 18px 18px;
+}
+
+#nav-btn {
+  background: rgba(255, 255, 255, 0.08) url('https://plusb3b.kr/gamehub-img/nav.svg') no-repeat center;
+  background-size: 18px 18px;
+}
+
+/****************************
+  Ripple Effect
+*****************************/
+.menu-btn-group button .ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+  transform: scale(0);
+  mix-blend-mode: screen;
+  width: 0;
+  height: 0;
+}
+
+/****************************
+  PC Design (Desktop) - Vertical Right
+*****************************/
+@media (min-width: 769px) {
+  .menu-btn-group {
+    top: 24px;
+    right: 24px;
+    flex-direction: column;
+    padding: 12px 8px;
+    gap: 8px;
+    border-radius: 24px;
+    width: 76px; /* 🔧 FIX: Increased fixed width for PC */
+    margin-right: 0;
+  }
+
+  .menu-btn-group button {
+    padding: 14px;
+    min-width: 52px;
+    min-height: 52px;
+    width: 52px; /* 🔧 FIX: Fixed width for PC */
+    height: 52px; /* 🔧 FIX: Fixed height for PC */
+    border-radius: 18px;
+  }
+
+  /* PC 버전에서 각 버튼별 배경 크기 조정 */
+  #back-btn,
+  #home-btn,
+  #create-btn,
+  #view-locate,
+  #nav-btn {
+    background-size: 22px 22px !important;
+  }
+}
+
+/****************************
+  Mobile Design - Bottom Dock (Horizontal)
+*****************************/
+@media (max-width: 768px) {
+  .menu-btn-group {
+    top: auto;
+    bottom: 20px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    flex-direction: row;
+    padding: 10px 20px;
+    gap: 12px;
+    border-radius: 25px;
+    width: auto;
+    min-width: 280px;
+    /* 모바일에서 더 진한 글래스 효과 */
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(50px) saturate(200%);
+    -webkit-backdrop-filter: blur(50px) saturate(200%);
+    box-shadow:
+            0 12px 40px rgba(0, 0, 0, 0.15),
+            0 0 0 0.5px rgba(255, 255, 255, 0.3) inset,
+            0 2px 0 rgba(255, 255, 255, 0.5) inset;
+  }
+
+  .menu-btn-group button {
+    padding: 14px;
+    min-width: 50px;
+    min-height: 50px;
+    /* flex 확장으로 인한 리플로우 방지 */
+    flex: 0 0 auto;
+    width: 50px; /* 🔧 FIX: Fixed width for mobile */
+    height: 50px; /* 🔧 FIX: Fixed height for mobile */
+    border-radius: 16px;
+  }
+
+  /* 모바일 버전에서 각 버튼별 배경 크기 조정 */
+  #back-btn,
+  #home-btn,
+  #create-btn,
+  #view-locate,
+  #nav-btn {
+    background-size: 20px 20px !important;
+  }
+
+  /* 모바일 애니메이션 수정 */
+  .menu-btn-group {
+    animation: slideInUpMobile 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s forwards;
+    transform: translateX(-50%) translateY(20px) scale(0.95);
+    opacity: 0;
+  }
+}
+
+@keyframes slideInUpMobile {
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+/****************************
+  Very Small Mobile
+*****************************/
+@media (max-width: 480px) {
+  .menu-btn-group {
+    bottom: 16px;
+    padding: 8px 16px;
+    gap: 8px;
+    border-radius: 22px;
+    min-width: 260px;
+  }
+
+  .menu-btn-group button {
+    padding: 12px;
+    min-width: 46px;
+    min-height: 46px;
+    /* flex 확장으로 인한 리플로우 방지 */
+    flex: 0 0 auto;
+    width: 46px; /* 🔧 FIX: Fixed width for small mobile */
+    height: 46px; /* 🔧 FIX: Fixed height for small mobile */
+    border-radius: 14px;
+  }
+
+  /* 소형 모바일 버전에서 각 버튼별 배경 크기 조정 */
+  #back-btn,
+  #home-btn,
+  #create-btn,
+  #view-locate,
+  #nav-btn {
+    background-size: 18px 18px !important;
+  }
+}
+
+/****************************
+  Accessibility & Focus
+*****************************/
+.menu-btn-group button:focus {
+  outline: none;
+  box-shadow:
+          0 8px 20px rgba(0, 0, 0, 0.15),
+          0 0 0 3px rgba(102, 126, 234, 0.4),
+          0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+.menu-btn-group button:focus-visible {
+  box-shadow:
+          0 8px 20px rgba(0, 0, 0, 0.15),
+          0 0 0 3px rgba(102, 126, 234, 0.5),
+          0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+/****************************
+  Animation Enhancements
+*****************************/
+.menu-btn-group button {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.menu-btn-group button:nth-child(1) {
+  animation: buttonSlideIn 0.5s ease-out 0.5s forwards;
+}
+
+.menu-btn-group button:nth-child(2) {
+  animation: buttonSlideIn 0.5s ease-out 0.6s forwards;
+}
+
+.menu-btn-group button:nth-child(3) {
+  animation: buttonSlideIn 0.5s ease-out 0.7s forwards;
+}
+
+.menu-btn-group button:nth-child(4) {
+  animation: buttonSlideIn 0.5s ease-out 0.8s forwards;
+}
+
+.menu-btn-group button:nth-child(5) {
+  animation: buttonSlideIn 0.5s ease-out 0.9s forwards;
+}
+
+@keyframes buttonSlideIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/****************************
+  Dark Mode Support
+*****************************/
+@media (prefers-color-scheme: dark) {
+  .menu-btn-group button {
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow:
+            0 8px 20px rgba(0, 0, 0, 0.3),
+            0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+  }
+
+  .menu-btn-group button:hover {
+    box-shadow:
+            0 12px 30px rgba(0, 0, 0, 0.4),
+            0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+  }
+}
+
+/****************************
+  Reduced Motion Support
+*****************************/
+@media (prefers-reduced-motion: reduce) {
+  .menu-btn-group,
+  .menu-btn-group button {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+  }
+
+  .menu-btn-group button:hover {
+    transform: none !important;
+  }
+}
+
+/****************************
+  🔧 ADDITIONAL FIX: Layout Container Safety
+*****************************/
+/* Ensure main content doesn't get affected by menu bar transforms */
+.main-container,
+.bg-overlay {
+  position: relative;
+  z-index: 1;
+  /* Create new stacking context */
+  transform: translateZ(0);
+}
+
+/* Additional safety for fixed positioning issues */
+@supports (backdrop-filter: blur(1px)) {
+  .menu-btn-group {
+    /* Enhanced containment for modern browsers */
+    contain: layout style paint;
+  }
+}

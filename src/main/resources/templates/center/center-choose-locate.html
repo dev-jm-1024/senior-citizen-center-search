@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>경로당 선택 | 성남시 노인센터 검색</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Animation Library -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    
+    <!-- Center Choose Locate Skin -->
+    <link rel="stylesheet" th:href="@{/center-skin/center-choose-locate.css}">
+    <link rel="stylesheet" th:href="@{/center-skin/menu-bar.css}">
+</head>
+<body>
+<div th:replace="common/menu-bar :: menuBar"></div>
+
+<div class="bg-overlay">
+    <div class="main-container no-menu-padding">
+        <h1 class="page-title">경로당 선택</h1>
+
+        <form id="centerSelectForm">
+            <div th:each="entry : ${vm}" class="district">
+                <h2 th:text="${entry.key}">구 이름</h2>
+
+                <div class="center-list">
+                    <div th:each="center : ${entry.value}" class="center-item" th:onclick="'toggleCheck(this)'">
+                        <input type="checkbox"
+                               class="center-checkbox"
+                               th:value="${center.locationId}"
+                               th:data-name="${center.locationName.locationName}"
+                               th:data-address="${center.locationAddress.address}"
+                               th:data-lat="${center.latitude.latitude}"
+                               th:data-lng="${center.longitude.longitude}"
+                               onclick="event.stopPropagation();">
+
+                        <div class="center-info">
+                            <div class="center-name" th:text="${center.locationName.locationName}">경로당 이름</div>
+                            <div class="center-address" th:text="${center.locationAddress.address}">주소</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" class="confirm-btn" onclick="confirmSelection()">
+                선택한 경로당 확인하기
+            </button>
+            <div class="selected-count" id="selectedCount">선택된 경로당: 0개 (최대 10개)</div>
+        </form>
+    </div>
+</div>
+
+<!-- Center Choose Locate JavaScript -->
+<script defer th:src="@{/center-skin/center-choose-locate.js}"></script>
+<script th:src="@{/center-skin/menu-bar.js}"></script>
+</body>
+</html>

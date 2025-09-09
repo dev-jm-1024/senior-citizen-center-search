@@ -1,0 +1,142 @@
+/* Seongnam Quarter Page - Consistent Theme with Group Colors */
+
+:root {
+  --bg-img: url('https://plusb3b.kr/center-img/bg-filter.png');
+  --glass: rgba(255, 255, 255, 0.95);
+  --glass-border: rgba(255, 255, 255, 0.25);
+  --shadow-1: 0 10px 20px rgba(0,0,0,0.12);
+
+  /* Group colors (match center-main) */
+  --group-red: #DD164B;   /* 수정구 */
+  --group-blue: #0175C0;  /* 분당구 */
+  --group-orange: #F8AC59;/* 중원구 */
+}
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: 'Noto Sans KR', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #111827;
+  background-image: var(--bg-img);
+  background-size: cover;
+  background-position: center center;
+  background-attachment: fixed;
+}
+
+.bg-overlay {
+  min-height: 100vh;
+  background: linear-gradient(135deg, rgba(0,0,0,0.15), rgba(0,0,0,0.10) 50%, rgba(0,0,0,0.15));
+}
+
+.container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+header {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: var(--shadow-1);
+  margin-bottom: 22px;
+}
+
+h1 {
+  text-align: center;
+  margin: 0 0 16px 0;
+  font-size: 34px; /* larger */
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #454545; /* solid visible color */
+}
+
+.area-buttons { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.area-btn {
+  padding: 12px 20px;
+  background: #0175C0; /* default */
+  color: #fff;
+  border-radius: 9999px;
+  font-weight: 700;
+  border: 0;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.area-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(1,117,192,0.22); background: #015e99; }
+
+/* Group-colored area buttons */
+.btn-red { background: var(--group-red); }
+.btn-red:hover { box-shadow: 0 10px 20px rgba(221,22,75,0.25); background: #b8113d; }
+
+.btn-blue { background: var(--group-blue); }
+.btn-blue:hover { box-shadow: 0 10px 20px rgba(1,117,192,0.25); background: #015e99; }
+
+.btn-orange { background: var(--group-orange); color: #1f2937; }
+.btn-orange:hover { box-shadow: 0 10px 20px rgba(248,172,89,0.25); background: #e39a4b; }
+
+.centers-section {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow-1);
+}
+
+.section-title {
+  font-size: 24px;
+  color: #454545; /* requested color */
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 3px solid #9ca3af; /* default */
+}
+
+.center-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.center-card {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-left: 4px solid #9ca3af; /* default, overridden by theme */
+  min-height: 140px; /* stabilize heights */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.center-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,0.12); }
+
+.center-name { font-size: 18px; font-weight: 800; color: #111827; margin-bottom: 8px; }
+.center-info { color: #4b5563; margin-bottom: 8px; display: flex; align-items: center; }
+.center-info i { margin-right: 8px; width: 16px; }
+
+.detail-btn {
+  display: inline-flex;
+  margin-top: 12px;
+  padding: 8px 14px;
+  background: #0175C0;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 9999px;
+  font-size: 14px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.detail-btn:hover { transform: translateY(-1px); background: #015e99; box-shadow: 0 10px 20px rgba(1,117,192,0.22); }
+
+.no-centers { text-align: center; color: #6b7280; font-size: 18px; padding: 28px; }
+
+/* Theming based on area */
+.theme-red .section-title { border-bottom-color: var(--group-red); }
+.theme-red .center-card { border-left-color: var(--group-red); }
+.theme-red .detail-btn { background: var(--group-red); }
+.theme-red .detail-btn:hover { background: #b8113d; box-shadow: 0 10px 20px rgba(221,22,75,0.25); }
+
+.theme-blue .section-title { border-bottom-color: var(--group-blue); }
+.theme-blue .center-card { border-left-color: var(--group-blue); }
+.theme-blue .detail-btn { background: var(--group-blue); }
+.theme-blue .detail-btn:hover { background: #015e99; box-shadow: 0 10px 20px rgba(1,117,192,0.25); }
+
+.theme-orange .section-title { border-bottom-color: var(--group-orange); }
+.theme-orange .center-card { border-left-color: var(--group-orange); }
+.theme-orange .detail-btn { background: var(--group-orange); color: #1f2937; }
+.theme-orange .detail-btn:hover { background: #e39a4b; box-shadow: 0 10px 20px rgba(248,172,89,0.25); }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container { padding: 16px; }
+  .center-grid { grid-template-columns: 1fr; }
+  h1 { font-size: 28px; } /* slightly smaller on mobile */
+}

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>성남 지역별 센터</title>
+    <link rel="stylesheet" th:href="@{/center-skin/center-seongnam-quarter.css}">
+    <link rel="stylesheet" th:href="@{/center-skin/menu-bar.css}">
+</head>
+<body>
+<div class="bg-overlay">
+<div th:replace="common/menu-bar :: menuBar"></div>
+<div class="container">
+    <!-- 지역별 네비게이션 -->
+    <header>
+        <h1>성남시 지역별 경로당</h1>
+        <div class="area-buttons">
+            <button type="button" class="area-btn btn-red" onclick="location.href='/center/view/quarter/수정구'">수정구</button>
+            <button type="button" class="area-btn btn-blue" onclick="location.href='/center/view/quarter/분당구'">분당구</button>
+            <button type="button" class="area-btn btn-orange" onclick="location.href='/center/view/quarter/중원구'">중원구</button>
+        </div>
+    </header>
+
+    <!-- 해당 지역 센터 정보 -->
+    <div class="centers-section">
+        <h2 class="section-title" th:if="${vm != null and !vm.isEmpty()}">
+            [[${vm[0].locationAddress.address.contains('수정구') ? '수정구' : vm[0].locationAddress.address.contains('분당구') ? '분당구' : vm[0].locationAddress.address.contains('중원구') ? '중원구' : '성남시'}]] 센터 목록
+        </h2>
+
+        <div th:if="${vm != null and !vm.isEmpty()}" class="center-grid">
+            <div th:each="center : ${vm}" class="center-card">
+                <div class="center-name" th:text="${center.locationName.locationName}">센터명</div>
+
+                <div class="center-info">
+                    <i>📞</i>
+                    <span th:text="${center.locationNumber.locationNumber}">전화번호</span>
+                </div>
+
+                <div class="center-info">
+                    <i>📍</i>
+                    <span th:text="${center.locationAddress.address}">주소</span>
+                </div>
+
+                <a th:href="@{/center/view/{locationId}(locationId=${center.locationId})}"
+                   class="detail-btn">상세보기</a>
+            </div>
+        </div>
+
+        <div th:if="${vm == null or vm.isEmpty()}" class="no-centers">
+            해당 지역에 등록된 센터가 없습니다.
+        </div>
+    </div>
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<script th:src="@{/center-skin/menu-bar.js}"></script>
+<script th:src="@{/center-skin/center-seongnam-quarter.js}"></script>
+</body>
+</html>

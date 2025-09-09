@@ -1,0 +1,1092 @@
+/* Center Waypoints - Navigation Waypoints Selection (Consistent with main design) */
+
+/****************************
+  Base Variables
+*****************************/
+:root {
+  --primary: #667eea;
+  --primary-deep: #4c51bf;
+  --accent: #764ba2;
+  --glass: rgba(255, 255, 255, 0.95);
+  --glass-border: rgba(255, 255, 255, 0.25);
+  --shadow-1: 0 10px 20px rgba(0,0,0,0.12);
+  --shadow-2: 0 20px 40px rgba(0,0,0,0.16);
+
+  /* District Colors */
+  --sujeong: #DD164B;
+  --bundang: #0175C0;
+  --jungwon: #F8AC59;
+  
+  /* Waypoint specific colors */
+  --waypoint-primary: #fd7e14;
+  --waypoint-secondary: #e55a4e;
+  
+  /* Button specific colors (Green theme) */
+  --btn-primary: #28a745;
+  --btn-secondary: #218838;
+}
+
+html, body {
+  height: 100%;
+  /* 🔧 FIX: 메뉴바로 인한 가로 밀림 방지 */
+  overflow-x: hidden;
+}
+
+body {
+  background-image: url('https://plusb3b.kr/center-img/bg-filter.png');
+  background-size: cover;
+  background-position: center center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  margin: 0;
+  padding: 0;
+  font-family: 'Noto Sans KR', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #111827;
+  /* 초기 로딩 안정화 */
+  visibility: visible;
+  opacity: 1;
+}
+
+.bg-overlay {
+  min-height: 100vh;
+  background: linear-gradient(135deg, rgba(0,0,0,0.15), rgba(0,0,0,0.10) 50%, rgba(0,0,0,0.15));
+  padding: 24px 0;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/****************************
+  Menu Bar 여백 처리
+*****************************/
+/* PC에서는 메뉴바가 오른쪽 상단에 고정 */
+@media (min-width: 769px) {
+  .container {
+    padding-top: 100px; /* 메뉴바 높이 + 여백 고려 */
+    /* 🔧 FIX: 메뉴바와의 충돌 방지를 위한 오른쪽 여백 추가 */
+    padding-right: 120px;
+  }
+}
+
+/* 모바일에서는 메뉴바가 하단에 고정 */
+@media (max-width: 768px) {
+  .container {
+    padding-bottom: 120px; /* 하단 메뉴바를 위한 여백 */
+  }
+}
+
+/****************************
+  Header - Apple Glassmorphism (Waypoint Theme)
+*****************************/
+.header {
+  /* Apple-style glassmorphism background with waypoint theme */
+  background: rgba(253, 126, 20, 0.08);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  
+  /* Apple-style border and shadow with orange accent */
+  border: 0.5px solid rgba(253, 126, 20, 0.25);
+  border-radius: 20px;
+  box-shadow: 
+    0 8px 32px rgba(253, 126, 20, 0.12),
+    0 0 0 0.5px rgba(255, 255, 255, 0.2) inset,
+    0 1px 0 rgba(255, 255, 255, 0.4) inset;
+  
+  padding: 40px;
+  margin-bottom: 32px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.95);
+  position: relative;
+  overflow: hidden;
+  
+  /* 초기 상태 안정화 */
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+  /* 조건부 애니메이션 */
+  animation: slideInDown 0.8s ease-out forwards;
+}
+
+/* Apple-style subtle highlight effect */
+.header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.6), 
+    transparent
+  );
+}
+
+.header:hover {
+  background: rgba(253, 126, 20, 0.12);
+  border-color: rgba(253, 126, 20, 0.35);
+  box-shadow: 
+    0 12px 40px rgba(253, 126, 20, 0.15),
+    0 0 0 0.5px rgba(255, 255, 255, 0.3) inset,
+    0 1px 0 rgba(255, 255, 255, 0.5) inset;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.header h1 {
+  font-size: 2.2rem;
+  font-weight: 900;
+  margin-bottom: 12px;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 1;
+}
+
+.header p {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 1;
+}
+
+/****************************
+  Selection Counter
+*****************************/
+.selection-counter {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 16px 24px;
+  margin-bottom: 24px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--waypoint-primary);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.1),
+    0 0 0 0.5px rgba(255, 255, 255, 0.1) inset;
+  position: relative;
+  overflow: hidden;
+  /* 초기 상태 안정화 */
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+  animation: slideInUp 0.6s ease-out 0.2s forwards;
+}
+
+.selection-counter::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(253, 126, 20, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.selection-counter:hover::before {
+  left: 100%;
+}
+
+/****************************
+  Content Area
+*****************************/
+.content {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: var(--shadow-2);
+  backdrop-filter: blur(10px);
+  /* 초기 상태 안정화 */
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+  /* 조건부 애니메이션 */
+  animation: slideInUp 0.8s ease-out 0.3s forwards;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/****************************
+  Region Groups with Scrollable Content
+*****************************/
+.region-group {
+  margin-bottom: 32px;
+  /* 초기 상태 안정화 */
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+  /* 조건부 애니메이션 */
+  animation: slideInFade 0.6s ease-out forwards;
+  
+  /* 🔧 FIX: 스크롤 가능한 컨테이너 설정 */
+  display: flex;
+  flex-direction: column;
+  max-height: 400px; /* 최대 높이 제한 */
+}
+
+/* 지역 제목은 고정 */
+.region-group .region-title {
+  flex-shrink: 0; /* 제목은 축소되지 않음 */
+  position: sticky;
+  top: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 10;
+  margin-bottom: 0;
+  padding-bottom: 16px;
+  border-radius: 12px 12px 0 0;
+}
+
+/* 스크롤 가능한 위치 목록 컨테이너 */
+.region-group .location-grid {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px 0;
+  margin-top: 4px;
+  
+  /* Apple-style 스크롤바 */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(102, 126, 234, 0.3) rgba(255, 255, 255, 0.1);
+}
+
+/* Webkit 스크롤바 커스터마이징 (Chrome, Safari) */
+.region-group .location-grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.region-group .location-grid::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  margin: 4px 0;
+}
+
+.region-group .location-grid::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.4), rgba(118, 75, 162, 0.4));
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.region-group .location-grid::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.6), rgba(118, 75, 162, 0.6));
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.region-group .location-grid::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8));
+}
+
+.region-group:nth-child(1) { animation-delay: 0.4s; }
+.region-group:nth-child(2) { animation-delay: 0.5s; }
+.region-group:nth-child(3) { animation-delay: 0.6s; }
+
+@keyframes slideInFade {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.region-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 3px solid;
+  position: relative;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* District-specific colors */
+.region-group:has(.region-title:contains("수정구")) .region-title,
+.region-title:contains("수정구") {
+  color: var(--sujeong);
+  border-color: var(--sujeong);
+}
+
+.region-group:has(.region-title:contains("분당구")) .region-title,
+.region-title:contains("분당구") {
+  color: var(--bundang);
+  border-color: var(--bundang);
+}
+
+.region-group:has(.region-title:contains("중원구")) .region-title,
+.region-title:contains("중원구") {
+  color: var(--jungwon);
+  border-color: var(--jungwon);
+}
+
+/* District-specific scrollbar colors */
+.region-group:has(.region-title:contains("수정구")) .location-grid::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, rgba(221, 22, 75, 0.4), rgba(185, 28, 92, 0.4));
+}
+
+.region-group:has(.region-title:contains("수정구")) .location-grid::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, rgba(221, 22, 75, 0.6), rgba(185, 28, 92, 0.6));
+}
+
+.region-group:has(.region-title:contains("분당구")) .location-grid::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, rgba(1, 117, 192, 0.4), rgba(3, 105, 161, 0.4));
+}
+
+.region-group:has(.region-title:contains("분당구")) .location-grid::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, rgba(1, 117, 192, 0.6), rgba(3, 105, 161, 0.6));
+}
+
+.region-group:has(.region-title:contains("중원구")) .location-grid::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, rgba(248, 172, 89, 0.4), rgba(245, 158, 11, 0.4));
+}
+
+.region-group:has(.region-title:contains("중원구")) .location-grid::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, rgba(248, 172, 89, 0.6), rgba(245, 158, 11, 0.6));
+}
+
+/* District-specific checkbox colors */
+.region-group:has(.region-title:contains("수정구")) .location-item input[type="checkbox"] {
+  border-color: var(--sujeong);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(221, 22, 75, 0.2) inset;
+}
+
+.region-group:has(.region-title:contains("수정구")) .location-item input[type="checkbox"]:checked {
+  background: linear-gradient(135deg, var(--sujeong), #b91c5c);
+  border-color: var(--sujeong);
+  box-shadow:
+    0 0 0 4px rgba(221, 22, 75, 0.3),
+    0 4px 16px rgba(221, 22, 75, 0.4);
+}
+
+.region-group:has(.region-title:contains("수정구")) .location-item input[type="checkbox"]:hover {
+  border-color: #b91c5c;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    0 0 0 2px rgba(221, 22, 75, 0.3) inset;
+}
+
+.region-group:has(.region-title:contains("분당구")) .location-item input[type="checkbox"] {
+  border-color: var(--bundang);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(1, 117, 192, 0.2) inset;
+}
+
+.region-group:has(.region-title:contains("분당구")) .location-item input[type="checkbox"]:checked {
+  background: linear-gradient(135deg, var(--bundang), #0369a1);
+  border-color: var(--bundang);
+  box-shadow:
+    0 0 0 4px rgba(1, 117, 192, 0.3),
+    0 4px 16px rgba(1, 117, 192, 0.4);
+}
+
+.region-group:has(.region-title:contains("분당구")) .location-item input[type="checkbox"]:hover {
+  border-color: #0369a1;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    0 0 0 2px rgba(1, 117, 192, 0.3) inset;
+}
+
+.region-group:has(.region-title:contains("중원구")) .location-item input[type="checkbox"] {
+  border-color: var(--jungwon);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(248, 172, 89, 0.2) inset;
+}
+
+.region-group:has(.region-title:contains("중원구")) .location-item input[type="checkbox"]:checked {
+  background: linear-gradient(135deg, var(--jungwon), #f59e0b);
+  border-color: var(--jungwon);
+  box-shadow:
+    0 0 0 4px rgba(248, 172, 89, 0.3),
+    0 4px 16px rgba(248, 172, 89, 0.4);
+}
+
+.region-group:has(.region-title:contains("중원구")) .location-item input[type="checkbox"]:hover {
+  border-color: #f59e0b;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    0 0 0 2px rgba(248, 172, 89, 0.3) inset;
+}
+
+/* Fallback for general district titles */
+.region-title {
+  color: var(--waypoint-primary);
+  border-color: var(--waypoint-primary);
+}
+
+/****************************
+  Location Grid
+*****************************/
+.location-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+/****************************
+  Location Items (Checkbox Style)
+*****************************/
+.location-item {
+  display: flex;
+  align-items: center;
+  padding: 24px 20px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(15px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  /* 🔧 FIX: 강제 초기 상태 안정화 */
+  opacity: 1 !important;
+  transform: translateY(0) translateX(0) !important;
+  visibility: visible !important;
+  /* 레이아웃 안정성 강화 */
+  contain: layout style;
+  will-change: auto;
+  /* 찌그러짐 방지 */
+  min-height: 84px;
+  gap: 18px;
+}
+
+.location-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+/* 기본 호버 효과 - 지역별 효과가 없을 때만 적용 */
+.location-item:hover:not(.region-group:has(.region-title:contains("수정구")) .location-item):not(.region-group:has(.region-title:contains("분당구")) .location-item):not(.region-group:has(.region-title:contains("중원구")) .location-item) {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: var(--waypoint-primary);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(253, 126, 20, 0.2);
+}
+
+.location-item:hover::before {
+  left: 100%;
+}
+
+/* 기본 선택 효과 - 지역별 효과가 없을 때만 적용 */
+.location-item.selected-item:not(.region-group:has(.region-title:contains("수정구")) .location-item):not(.region-group:has(.region-title:contains("분당구")) .location-item):not(.region-group:has(.region-title:contains("중원구")) .location-item) {
+  background: rgba(253, 126, 20, 0.15);
+  border-color: var(--waypoint-primary);
+  box-shadow: 0 0 0 3px rgba(253, 126, 20, 0.3);
+  transform: translateY(-2px);
+}
+
+/* District-specific hover colors */
+.region-group:has(.region-title:contains("수정구")) .location-item:hover {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: var(--sujeong);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(221, 22, 75, 0.2);
+}
+
+.region-group:has(.region-title:contains("분당구")) .location-item:hover {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: var(--bundang);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(1, 117, 192, 0.2);
+}
+
+.region-group:has(.region-title:contains("중원구")) .location-item:hover {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: var(--jungwon);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(248, 172, 89, 0.2);
+}
+
+/* District-specific selected item colors */
+.region-group:has(.region-title:contains("수정구")) .location-item.selected-item {
+  background: rgba(221, 22, 75, 0.15);
+  border-color: var(--sujeong);
+  box-shadow: 0 0 0 3px rgba(221, 22, 75, 0.3);
+}
+
+.region-group:has(.region-title:contains("분당구")) .location-item.selected-item {
+  background: rgba(1, 117, 192, 0.15);
+  border-color: var(--bundang);
+  box-shadow: 0 0 0 3px rgba(1, 117, 192, 0.3);
+}
+
+.region-group:has(.region-title:contains("중원구")) .location-item.selected-item {
+  background: rgba(248, 172, 89, 0.15);
+  border-color: var(--jungwon);
+  box-shadow: 0 0 0 3px rgba(248, 172, 89, 0.3);
+}
+
+/* Disabled state for max selection */
+.location-item:has(input:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* 🚩 출발지로 설정된 위치 스타일 */
+.location-item.start-location-item {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  background: rgba(255, 193, 7, 0.1) !important;
+  border-color: rgba(255, 193, 7, 0.4) !important;
+  pointer-events: auto; /* 클릭 이벤트 허용 (알림용) */
+}
+
+.location-item.start-location-item:hover {
+  background: rgba(255, 193, 7, 0.15) !important;
+  border-color: rgba(255, 193, 7, 0.5) !important;
+  transform: none !important;
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2) !important;
+}
+
+.location-item.start-location-item input[type="checkbox"] {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+  background: rgba(200, 200, 200, 0.5) !important;
+  border-color: rgba(150, 150, 150, 0.5) !important;
+}
+
+/* 출발지 배지 스타일 */
+.start-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #ffc107, #ff8f00);
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-top: 4px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
+  animation: startBadgePulse 2s ease-in-out infinite;
+}
+
+@keyframes startBadgePulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+/****************************
+  Enhanced Checkbox
+*****************************/
+.location-item input[type="checkbox"] {
+  margin-right: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 3px solid var(--waypoint-primary);
+  background: rgba(255, 255, 255, 0.95);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  appearance: none;
+  -webkit-appearance: none;
+  box-shadow:
+          0 2px 8px rgba(0, 0, 0, 0.1),
+          0 0 0 1px rgba(253, 126, 20, 0.2) inset;
+  flex-shrink: 0;
+}
+
+.location-item input[type="checkbox"]:checked {
+  background: linear-gradient(135deg, var(--waypoint-primary), var(--waypoint-secondary));
+  border-color: var(--waypoint-primary);
+  box-shadow:
+          0 0 0 4px rgba(253, 126, 20, 0.3),
+          0 4px 16px rgba(253, 126, 20, 0.4);
+  transform: scale(1.1);
+}
+
+/* 🔧 FIX: 체크박스 체크마크 완전 제어 - 해제 시 즉시 사라짐 */
+.location-item input[type="checkbox"]::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  color: white;
+  font-size: 14px;
+  font-weight: 900;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.15s ease;
+}
+
+/* 체크된 상태에서만 체크마크 표시 */
+.location-item input[type="checkbox"]:checked::after {
+  content: '✓';
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  visibility: visible;
+  animation: checkmarkPop 0.25s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* 해제된 체크박스는 즉시 숨김 - 최고 우선순위 */
+.location-item input[type="checkbox"]:not(:checked)::after {
+  content: '' !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transform: translate(-50%, -50%) scale(0) !important;
+  animation: none !important;
+  transition: none !important;
+}
+
+@keyframes checkmarkPop {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+/* 해제 애니메이션 */
+@keyframes checkmarkFadeOut {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
+}
+
+.location-item input[type="checkbox"]:hover {
+  border-color: var(--waypoint-secondary);
+  background: rgba(255, 255, 255, 1);
+  box-shadow:
+          0 4px 12px rgba(0, 0, 0, 0.15),
+          0 0 0 2px rgba(253, 126, 20, 0.3) inset;
+  transform: scale(1.05);
+}
+
+.location-item input[type="checkbox"]:focus {
+  outline: none;
+  box-shadow:
+          0 0 0 4px rgba(253, 126, 20, 0.4),
+          0 4px 16px rgba(253, 126, 20, 0.3);
+}
+
+.location-item input[type="checkbox"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: #9ca3af;
+  background: #f3f4f6;
+}
+
+/****************************
+  Location Info
+*****************************/
+.location-info {
+  flex-grow: 1;
+  color: #1f2937;
+}
+
+.location-name {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 6px;
+  color: #1f2937;
+  text-shadow: none;
+  line-height: 1.3;
+}
+
+.location-address {
+  color: #4b5563;
+  font-size: 13px;
+  line-height: 1.4;
+  text-shadow: none;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/****************************
+  No Locations Message
+*****************************/
+.no-locations {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+  padding: 40px 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 16px;
+}
+
+/****************************
+  Submit Section
+*****************************/
+.submit-section {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  text-align: center;
+}
+
+.btn-group {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 32px;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 16px;
+  text-decoration: none;
+  border: 2px solid;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  /* 🔧 FIX: 즉시 표시되도록 애니메이션 제거 */
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn:hover::before {
+  left: 100%;
+}
+
+.btn-skip {
+  background: linear-gradient(135deg, 
+    rgba(108, 117, 125, 0.9), 
+    rgba(90, 98, 104, 0.9)
+  );
+  color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(108, 117, 125, 0.8);
+  box-shadow: 
+    0 8px 20px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+.btn-skip:hover {
+  background: linear-gradient(135deg, 
+    rgba(108, 117, 125, 1), 
+    rgba(90, 98, 104, 1)
+  );
+  color: rgba(255, 255, 255, 1);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 
+    0 12px 25px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+}
+
+.btn-next {
+  background: linear-gradient(135deg, var(--btn-primary), var(--btn-secondary));
+  color: #fff;
+  border-color: var(--btn-primary);
+  box-shadow: 
+    0 10px 24px rgba(40, 167, 69, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+.btn-next:hover {
+  background: linear-gradient(135deg, #1e7e34, #155724);
+  border-color: #1e7e34;
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 
+    0 15px 35px rgba(40, 167, 69, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+  color: #fff;
+}
+
+.btn:active {
+  transform: translateY(-1px) scale(0.99);
+}
+
+/****************************
+  Ripple Effect
+*****************************/
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.4);
+  pointer-events: none;
+  transform: scale(0);
+  mix-blend-mode: screen;
+  width: 0;
+  height: 0;
+}
+
+/****************************
+  Responsive Design
+*****************************/
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+    padding-bottom: 120px; /* 하단 메뉴바 여백 증가 */
+    /* 🔧 FIX: 모바일에서는 오른쪽 여백 제거 */
+    padding-right: 16px !important;
+  }
+  
+  /* 모바일에서 스크롤 높이 조정 */
+  .region-group {
+    max-height: 300px; /* 모바일에서 더 작은 높이 */
+  }
+  
+  /* 모바일에서 출발지 배지 조정 */
+  .start-badge {
+    font-size: 10px;
+    padding: 1px 6px;
+  }
+  
+  /* 모바일 스크롤바 조정 */
+  .region-group .location-grid::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .header {
+    padding: 32px 24px;
+    margin-bottom: 24px;
+  }
+
+  .header h1 {
+    font-size: 1.9rem;
+    color: rgba(255, 255, 255, 0.95);
+  }
+
+  .header p {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .content {
+    padding: 24px;
+  }
+
+  .location-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .location-item {
+    padding: 16px;
+  }
+
+  .location-name {
+    font-size: 16px;
+  }
+
+  .location-address {
+    font-size: 13px;
+  }
+
+  .btn-group {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .btn {
+    padding: 16px 28px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding-bottom: 140px; /* 소형 모바일에서 더 많은 여백 */
+    /* 🔧 FIX: 소형 모바일에서도 오른쪽 여백 제거 */
+    padding-right: 16px !important;
+  }
+  
+  /* 소형 모바일에서 더 작은 스크롤 높이 */
+  .region-group {
+    max-height: 250px;
+  }
+  
+  /* 소형 모바일 스크롤바 더 얇게 */
+  .region-group .location-grid::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .header h1 {
+    font-size: 1.7rem;
+    color: rgba(255, 255, 255, 0.95);
+  }
+
+  .content {
+    padding: 20px;
+  }
+
+  .location-item {
+    padding: 14px;
+  }
+
+  .location-item input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    margin-right: 16px;
+  }
+
+  .location-name {
+    font-size: 15px;
+  }
+
+  .location-address {
+    font-size: 12px;
+  }
+}
+
+/****************************
+  Layout Stability & Performance
+*****************************/
+/* 레이아웃 시프트 방지 */
+.location-item, .location-info, .location-name, .location-address {
+  will-change: auto;
+  contain: layout;
+}
+
+.location-grid {
+  contain: layout style;
+  overflow-anchor: auto;
+}
+
+/* 🔧 FIX: 초기 로딩 안정화 - 모든 요소 기본 가시성 보장 */
+.header, .content, .region-group, .location-item, .btn, .selection-counter {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* 스크롤 영역 안정화 */
+.region-group .location-grid {
+  opacity: 1 !important;
+  visibility: visible !important;
+  overflow-anchor: auto;
+}
+
+/* 🔧 FIX: 버튼 가시성 특별 강화 */
+.btn {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: inline-flex !important;
+  transform: translateY(0) !important;
+}
+
+.location-item {
+  transform: translateY(0) translateX(0) !important;
+}
+
+/* 초기 로딩 상태 강제 안정화 */
+.container {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(0) !important;
+}
+
+.region-group {
+  /* 기본 상태를 안정화하되 애니메이션 유지 */
+  min-height: auto;
+}
+
+/* 모션 감소 설정 대응 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .header, .content, .region-group {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    animation: none !important;
+  }
+
+  .location-item {
+    opacity: 1 !important;
+    transform: translateY(0) translateX(0) !important;
+  }
+}
+
+/****************************
+  Dark Mode Support
+*****************************/
+@media (prefers-color-scheme: dark) {
+  .location-item {
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow:
+            0 8px 20px rgba(0, 0, 0, 0.3),
+            0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+  }
+
+  .location-item:hover {
+    box-shadow:
+            0 12px 30px rgba(0, 0, 0, 0.4),
+            0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+  }
+}

@@ -1,0 +1,229 @@
+# 네비게이션 시스템 플로우 아키텍처
+
+## 전체 플로우 개요
+
+출발지 → 경유지 → 도착지 → REST API → 결과 페이지
+
+## 1. 출발지 선택 단계
+
+### 1.1 페이지 역할
+- 사용자가 출발지를 선택하는 첫 번째 단계
+- 지역별로 그룹화된 위치 목록 표시
+
+### 1.2 데이터 전달
+```
+출발지 선택 → 경유지 페이지로 GET 요청
+
+전달 데이터:
+- start: "127.123456,37.654321" (경도,위도)  
+- startName: "홍대입구역"
+```
+
+### 1.3 URL 예시
+```
+GET /center/nav/waypoints?start=127.123456,37.654321&startName=홍대입구역
+```
+
+## 2. 경유지 선택 단계
+
+### 2.1 페이지 역할  
+- 출발지 데이터를 받아서 hidden input으로 보관
+- 사용자가 경유지를 선택 (최대 5개, 선택적)
+- 출발지 정보를 화면에 표시
+
+### 2.2 데이터 처리
+```java
+@GetMapping("/nav/waypoints")
+public String viewCenterNavWaypoints(@RequestParam String start,
+                                     @RequestParam String startName,
+                                     Model model) {
+    // 출발지 데이터를 Model에 담아 View로 전달
+    model.addAttribute("start", start);
+    model.addAttribute("startName", startName);
+    
+    // 경유지 선택용 위치 목록 조회
+    Map<String, List<CenterLocateVM>> vm = centerLocateService.getCenterLocateGroup();
+    model.addAttribute("vm", vm);
+}
+```
+
+### 2.3 데이터 전달
+```
+경유지 선택 → 도착지 페이지로 GET 요청
+
+전달 데이터:
+- start: "127.123456,37.654321" (출발지 좌표)
+- startName: "홍대입구역" (출발지 이름)
+- waypoints: "127.789012,37.987654|127.456789,37.123456" (경유지 좌표들, 선택적)
+- waypointNames: "강남역|서울역" (경유지 이름들, 선택적)
+```
+
+### 2.4 URL 예시
+```
+GET /center/nav/goal?start=127.123456,37.654321&startName=홍대입구역&waypoints=127.789012,37.987654|127.456789,37.123456&waypointNames=강남역|서울역
+```
+
+## 3. 도착지 선택 단계
+
+### 3.1 페이지 역할
+- 출발지 + 경유지 데이터를 받아서 hidden input으로 보관  
+- 사용자가 최종 도착지를 선택
+- 경로 요약 정보 표시 (출발지 → 경유지들 → 도착지 예정)
+
+### 3.2 데이터 처리
+```java
+@GetMapping("/nav/goal")  
+public String viewCenterNavRoute(@RequestParam String start,
+                                 @RequestParam String startName,
+                                 @RequestParam(required = false) String waypoints,
+                                 @RequestParam(required = false) String waypointNames,
+                                 Model model) {
+    // 모든 이전 데이터를 Model에 담아 View로 전달
+    model.addAttribute("start", start);
+    model.addAttribute("startName", startName);
+    model.addAttribute("waypoints", waypoints);
+    model.addAttribute("waypointNames", waypointNames);
+}
+```
+
+### 3.3 경로 검색 요청
+사용자가 "경로 검색하기" 버튼 클릭 → JavaScript에서 AJAX POST 요청
+
+## 4. REST API 호출 단계
+
+### 4.1 요청 구조
+```javascript
+// JavaScript에서 AJAX 호출
+const routeData = {
+    startCoords: "127.123456,37.654321",
+    startName: "홍대입구역",  
+    waypointCoords: "127.789012,37.987654|127.456789,37.123456", // 선택적
+    waypointNames: "강남역|서울역", // 선택적
+    goalCoords: "127.999888,37.777666",
+    goalName: "종로3가역"
+};
+
+fetch('/api/center/route/search', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(routeData)
+})
+```
+
+### 4.2 서버 처리 과정
+
+#### 4.2.1 Request DTO 바인딩
+```java
+@PostMapping("/api/center/route/search")
+public ResponseEntity<RouteSearchResponseDTO> searchRoute(@RequestBody RouteSearchRequestDTO request) {
+    // Spring이 자동으로 JSON → DTO 바인딩
+}
+```
+
+#### 4.2.2 Request DTO 구조
+```java
+public class RouteSearchRequestDTO {
+    private String startCoords;     // "127.123456,37.654321"
+    private String startName;       // "홍대입구역" 
+    private String waypointCoords;  // "127.789012,37.987654|127.456789,37.123456"
+    private String waypointNames;   // "강남역|서울역"
+    private String goalCoords;      // "127.999888,37.777666"
+    private String goalName;        // "종로3가역"
+}
+```
+
+#### 4.2.3 Naver Directions API 호출
+```java
+// DTO에서 데이터 추출하여 외부 API 호출
+RouteResponse naverResponse = naverDirectionsService.getRoute(
+    request.getStartCoords(),
+    request.getWaypointCoords(), 
+    request.getGoalCoords()
+);
+```
+
+#### 4.2.4 응답 데이터 가공
+```java
+// Naver API 응답을 클라이언트용 DTO로 변환
+RouteSearchResponseDTO response = RouteSearchResponseDTO.builder()
+    .success(true)
+    .message("경로 검색이 완료되었습니다")
+    .routeInfo(convertToRouteInfo(naverResponse))
+    .build();
+```
+
+### 4.3 Response DTO 구조
+```java
+public class RouteSearchResponseDTO {
+    private boolean success;        // 성공/실패 여부
+    private String message;         // 응답 메시지
+    private RouteInfo routeInfo;    // 경로 정보
+    
+    public static class RouteInfo {
+        private int distance;       // 총 거리 (미터)
+        private int duration;       // 소요 시간 (밀리초)  
+        private int tollFare;       // 통행료
+        private int fuelPrice;      // 연료비
+        private String startName;   // 출발지명
+        private String goalName;    // 도착지명
+        private List<String> waypointNames; // 경유지명들
+        private List<GuideInfo> guides;     // 상세 경로 안내
+    }
+}
+```
+
+## 5. 클라이언트 응답 처리
+
+### 5.1 성공 시 처리
+```javascript
+.then(response => response.json())
+.then(data => {
+    if (data.success) {
+        // center-nav-result.html 페이지로 이동하면서 결과 데이터 전달
+        // 방법 1: 세션/localStorage에 저장 후 페이지 이동
+        // 방법 2: 폼 데이터로 POST 요청하여 페이지 이동
+        redirectToResultPage(data);
+    } else {
+        // 에러 메시지 표시
+        alert(data.message);
+    }
+})
+```
+
+### 5.2 실패 시 처리  
+```javascript
+.catch(error => {
+    console.error('경로 검색 실패:', error);
+    alert('경로 검색 중 오류가 발생했습니다.');
+})
+```
+
+## 6. 에러 처리 전략
+
+### 6.1 서버 에러 처리
+- 400번대: 클라이언트 요청 오류 (좌표 형식 오류, 필수값 누락 등)
+- 500번대: 서버 내부 오류 (Naver API 호출 실패, 네트워크 오류 등)
+
+### 6.2 클라이언트 에러 표시
+- 성공/실패에 관계없이 HTTP 200 응답
+- Response DTO의 success 필드로 성공/실패 구분  
+- message 필드에 사용자 친화적인 에러 메시지 포함
+
+## 7. 기술적 장점
+
+### 7.1 기존 코드 재사용
+- NaverDirectionsService 그대로 활용
+- 기존 페이지 플로우 유지
+- 기존 HTML 템플릿 재사용
+
+### 7.2 개선된 부분
+- DTO 바인딩으로 파라미터 관리 간소화
+- REST API로 에러 처리 개선
+- JSON 응답으로 유연한 데이터 처리
+
+### 7.3 확장성
+- 추후 모바일 앱에서도 같은 REST API 사용 가능
+- 경로 검색 로직의 재사용성 증가
+- 테스트 용이성 향상

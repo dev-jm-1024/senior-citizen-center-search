@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>경유지 선택 | 성남시 노인센터 검색</title>
+    
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Animation Library -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    
+    <!-- Center Waypoints Skin -->
+    <link rel="stylesheet" th:href="@{/center-skin/center-waypoints.css}">
+    <link rel="stylesheet" th:href="@{/center-skin/menu-bar.css}">
+</head>
+<body>
+<div th:replace="common/menu-bar :: menuBar"></div>
+
+<div class="bg-overlay">
+    <div class="container">
+        <div class="header">
+            <h1>경유지 선택</h1>
+            <p>경로 중간에 들를 장소를 선택해주세요. (최대 5개, 선택하지 않아도 됩니다)</p>
+        </div>
+
+        <div class="selection-counter">
+            <span id="counterText">선택된 경유지: 0개 / 최대 5개</span>
+        </div>
+
+        <div class="content">
+            <form id="waypointsForm">
+                <input type="hidden" name="start" th:value="${hidden.start}" />
+                <input type="hidden" name="startName" th:value="${hidden.startName}" />
+
+                <div th:each="entry : ${vm}">
+                    <div class="region-group">
+                        <div class="region-title" th:text="${entry.key}"></div>
+
+                        <div class="location-grid" th:if="${!#lists.isEmpty(entry.value)}">
+                            <label class="location-item" th:each="location : ${entry.value}">
+                                <input type="checkbox"
+                                       name="waypoint"
+                                       th:value="${location.longitude.longitude + ',' + location.latitude.latitude}"
+                                       th:data-name="${location.locationName.locationName}">
+                                <div class="location-info">
+                                    <div class="location-name" th:text="${location.locationName.locationName}"></div>
+                                    <div class="location-address" th:text="${location.locationAddress.address}"></div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="no-locations" th:if="${#lists.isEmpty(entry.value)}">
+                            이 지역에는 등록된 위치가 없습니다.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="submit-section">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-skip" onclick="skipWaypoints()">
+                             경유지 없이 진행
+                        </button>
+                        <button type="button" class="btn btn-next" onclick="goToGoal()">
+                             도착지 선택하기
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Center Waypoints JavaScript -->
+<script defer th:src="@{/center-skin/center-waypoints.js}"></script>
+<script th:src="@{/center-skin/menu-bar.js}"></script>
+</body>
+</html>

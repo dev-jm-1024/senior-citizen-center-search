@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>센터 상세</title>
+
+    <script th:src="@{'https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=742tyl7pxy'}"
+            type="text/javascript"></script>
+    <link rel="stylesheet" th:href="@{/center-skin/center-detail.css}">
+    <link rel="stylesheet" th:href="@{/center-skin/menu-bar.css}">
+</head>
+<body>
+<div class="page-wrap">
+<div th:replace="common/menu-bar :: menuBar"></div>
+<div class="detail-card">
+<!-- 보여줘야할 것 -->
+<!--
+경로당 이름: locationName
+경로당 전화번호 : locationNumber -- tel
+경로당 주소: locationAddress
+경로당 위도 및 경도 : latitude, longitude -- hidden
+-->
+
+<h2 class="title" th:text="${vm.locationName.getLocationName}">경로당 이름</h2>
+<div class="meta">
+    <a th:href="@{'tel:' + ${vm.locationNumber().getLocationNumber}}">전화: [[${vm.locationNumber().getLocationNumber}]]</a>
+    <span>주소: [[${vm.locationAddress.getAddress}]]</span>
+  </div>
+
+<input type="hidden" id="latitude" th:value="${vm.latitude.getLatitude}">
+<input type="hidden" id="longitude" th:value="${vm.longitude.getLongitude}">
+
+<div class="map-wrap"><div id="map"></div></div>
+
+<div class="actions">
+  <a th:href="@{'/center/' + ${vm.locationId} + '/update'}"><button class="btn btn-update" type="button">수정하기</button></a>
+
+  <form method="post" th:action="@{'/api/v1/location/' + ${vm.locationId} + '/change/status'}">
+      <input type="hidden" th:value="${vm.locationId}">
+      <button type="submit" class="btn btn-delete">삭제하기</button>
+  </form>
+</div>
+
+<script>
+
+    const latitude = document.getElementById('latitude').value;
+    const longitude = document.getElementById('longitude').value;
+
+    var mapOptions = {
+        center: new naver.maps.LatLng(latitude, longitude),
+        zoom: 10
+    };
+
+    var map = new naver.maps.Map('map',{
+        center: new naver.maps.LatLng(latitude, longitude),
+        zoom: 15
+    });
+
+    var marker = new naver.maps.Marker({
+        position: new naver.maps.LatLng(latitude, longitude),
+        map: map
+    });
+    // expose for JS to keep it centered on resize
+    window.naverDetailMap = map;
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<script th:src="@{/center-skin/menu-bar.js}"></script>
+<script th:src="@{/center-skin/center-detail.js}"></script>
+    <script th:src="@{/center-skin/center-delete.js}"></script>
+</div>
+</div>
+</body>
+</html>

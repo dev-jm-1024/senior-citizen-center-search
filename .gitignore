@@ -1,0 +1,80 @@
+HELP.md
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### 민감한 설정 파일들 (중요!) ###
+application-local.properties
+.env
+.env.local
+.env.production
+*.env
+
+### 로그 파일들 ###
+*.log
+logs/
+log/
+
+### 데이터베이스 파일들 ###
+*.db
+*.sqlite
+*.sqlite3
+
+### 시스템 파일들 ###
+.DS_Store
+Thumbs.db
+desktop.ini
+
+### 임시 파일들 ###
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+### 백업 파일들 ###
+*.bak
+*.backup
+*.orig
+
+### Docker ###
+.dockerignore
+
+### Node.js (프론트엔드 사용 시) ###
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

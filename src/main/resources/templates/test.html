@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마커 표시 문제 진단</title>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', system-ui, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .debug-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .check-item {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status.ok { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.warning { background: #fff3cd; color: #856404; }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        .solution {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .urgent {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        h1, h2 {
+            color: #2d3748;
+        }
+    </style>
+</head>
+<body>
+<h1>🎯 마커 표시 문제 진단</h1>
+
+<div class="urgent">
+    <strong>🚨 빠른 체크:</strong> 브라우저 개발자도구(F12)를 열고 Console 탭에서 오류 메시지가 있는지 먼저 확인해보세요!
+</div>
+
+<div class="debug-panel">
+    <h2>1️⃣ locations 데이터 검증</h2>
+    <button onclick="checkLocationsData()">locations 데이터 확인</button>
+    <div id="locations-check" class="result" style="display:none;"></div>
+</div>
+
+<div class="debug-panel">
+    <h2>2️⃣ 좌표값 유효성 검사</h2>
+    <button onclick="checkCoordinates()">좌표값 검증</button>
+    <div id="coordinates-check" class="result" style="display:none;"></div>
+</div>
+
+<div class="debug-panel">
+    <h2>3️⃣ 마커 생성 과정 추적</h2>
+    <button onclick="traceMarkerCreation()">마커 생성 과정 추적</button>
+    <div id="marker-trace" class="result" style="display:none;"></div>
+</div>
+
+<div class="debug-panel">
+    <h2>4️⃣ 지도 범위 및 줌 레벨 확인</h2>
+    <button onclick="checkMapBounds()">지도 범위 확인</button>
+    <div id="bounds-check" class="result" style="display:none;"></div>
+</div>
+
+<div class="debug-panel">
+    <h2>5️⃣ 테스트 마커 생성</h2>
+    <button onclick="createTestMarker()">테스트 마커 생성</button>
+    <button onclick="clearTestMarkers()">테스트 마커 제거</button>
+    <div id="test-marker-result" class="result" style="display:none;"></div>
+</div>
+
+<div class="debug-panel">
+    <h2>🔧 해결 방안</h2>
+    <div id="solutions"></div>
+</div>
+
+<script>
+    let testMarkers = [];
+
+    function checkLocationsData() {
+        const result = document.getElementById('locations-check');
+        result.style.display = 'block';
+
+        try {
+            // locations 변수가 존재하는지 확인
+            if (typeof locations === 'undefined') {
+                result.innerHTML = `❌ ERROR: locations 변수가 정의되지 않았습니다!
+
+해결방법:
+1. HTML에서 Thymeleaf 스크립트 부분 확인
+2. 서버에서 locations 데이터가 제대로 전달되는지 확인
+3. 스크립트 로딩 순서 확인`;
+                return;
+            }
+
+            result.innerHTML = `✅ locations 변수 존재
+📊 데이터 개수: ${locations.length}개
+
+상세 데이터:
+${JSON.stringify(locations, null, 2)}`;
+
+            if (locations.length === 0) {
+                result.innerHTML += `\n\n⚠️ WARNING: locations 배열이 비어있습니다!
+- 데이터베이스에 데이터가 있는지 확인
+- 서버에서 데이터를 제대로 전달하는지 확인
+- activate 필드가 true인지 확인`;
+            }
+
+        } catch (error) {
+            result.innerHTML = `❌ ERROR: ${error.message}`;
+        }
+    }
+
+    function checkCoordinates() {
+        const result = document.getElementById('coordinates-check');
+        result.style.display = 'block';
+
+        if (typeof locations === 'undefined') {
+            result.innerHTML = '❌ locations 데이터가 없습니다. 먼저 위의 체크를 실행하세요.';
+            return;
+        }
+
+        let validCoords = 0;
+        let invalidCoords = [];
+
+        locations.forEach((item, index) => {
+            const lat = Number(item.lat);
+            const lng = Number(item.lng);
+
+            if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+                invalidCoords.push({
+                    index: index,
+                    name: item.name,
+                    lat: item.lat,
+                    lng: item.lng,
+                    reason: 'NaN 또는 무한값'
+                });
+            } else if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+                invalidCoords.push({
+                    index: index,
+                    name: item.name,
+                    lat: lat,
+                    lng: lng,
+                    reason: '좌표 범위 초과'
+                });
+            } else {
+                validCoords++;
+            }
+        });
+
+        result.innerHTML = `✅ 유효한 좌표: ${validCoords}개
+❌ 무효한 좌표: ${invalidCoords.length}개
+
+${invalidCoords.length > 0 ? '무효한 좌표 목록:\n' + JSON.stringify(invalidCoords, null, 2) : ''}`;
+    }
+
+    function traceMarkerCreation() {
+        const result = document.getElementById('marker-trace');
+        result.style.display = 'block';
+
+        if (typeof naver === 'undefined' || !naver.maps) {
+            result.innerHTML = '❌ 네이버 지도 API가 로드되지 않았습니다.';
+            return;
+        }
+
+        if (typeof locations === 'undefined') {
+            result.innerHTML = '❌ locations 데이터가 없습니다.';
+            return;
+        }
+
+        let traceLog = '마커 생성 과정 추적:\n\n';
+        let markerCount = 0;
+
+        try {
+            locations.forEach((item, index) => {
+                traceLog += `[${index}] ${item.name}\n`;
+
+                const lat = Number(item.lat);
+                const lng = Number(item.lng);
+
+                traceLog += `  - lat: ${lat}, lng: ${lng}\n`;
+
+                if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+                    traceLog += `  ❌ 좌표값 무효 - 마커 생성 건너뜀\n\n`;
+                    return;
+                }
+
+                try {
+                    const position = new naver.maps.LatLng(lat, lng);
+                    traceLog += `  ✅ LatLng 객체 생성 성공\n`;
+
+                    // 실제 지도가 있는지 확인
+                    if (window.naverMap) {
+                        traceLog += `  ✅ 지도 객체 존재\n`;
+                        markerCount++;
+                    } else {
+                        traceLog += `  ❌ 지도 객체 없음\n`;
+                    }
+
+                } catch (markerError) {
+                    traceLog += `  ❌ 마커 생성 실패: ${markerError.message}\n`;
+                }
+
+                traceLog += `\n`;
+            });
+
+            traceLog += `\n총 ${markerCount}개의 마커가 생성되어야 합니다.`;
+
+            if (window.mapMarkers) {
+                traceLog += `\n실제 생성된 마커: ${window.mapMarkers.length}개`;
+            }
+
+        } catch (error) {
+            traceLog += `\n❌ ERROR: ${error.message}`;
+        }
+
+        result.innerHTML = traceLog;
+    }
+
+    function checkMapBounds() {
+        const result = document.getElementById('bounds-check');
+        result.style.display = 'block';
+
+        if (!window.naverMap) {
+            result.innerHTML = '❌ 지도 객체가 없습니다.';
+            return;
+        }
+
+        try {
+            const center = window.naverMap.getCenter();
+            const zoom = window.naverMap.getZoom();
+            const bounds = window.naverMap.getBounds();
+
+            result.innerHTML = `지도 상태 정보:
+
+중심점: ${center.lat()}, ${center.lng()}
+줌 레벨: ${zoom}
+지도 경계:
+  - 북동: ${bounds.getNE().lat()}, ${bounds.getNE().lng()}
+  - 남서: ${bounds.getSW().lat()}, ${bounds.getSW().lng()}
+
+마커들이 이 범위 안에 있는지 확인해보세요!
+
+💡 TIP: 줌 레벨이 너무 높으면 (15 이상) 마커들이 보이지 않을 수 있습니다.`;
+
+        } catch (error) {
+            result.innerHTML = `❌ ERROR: ${error.message}`;
+        }
+    }
+
+    function createTestMarker() {
+        const result = document.getElementById('test-marker-result');
+        result.style.display = 'block';
+
+        if (!window.naverMap) {
+            result.innerHTML = '❌ 지도 객체가 없습니다.';
+            return;
+        }
+
+        try {
+            // 지도 중심에 테스트 마커 생성
+            const center = window.naverMap.getCenter();
+
+            const testMarker = new naver.maps.Marker({
+                position: center,
+                map: window.naverMap,
+                title: '테스트 마커',
+                icon: {
+                    content: `<div style="background: red; color: white; padding: 5px 10px; border-radius: 15px; font-weight: bold;">TEST</div>`,
+                    anchor: new naver.maps.Point(25, 25)
+                }
+            });
+
+            testMarkers.push(testMarker);
+
+            result.innerHTML = `✅ 테스트 마커 생성 성공!
+위치: ${center.lat()}, ${center.lng()}
+
+지도에 빨간색 "TEST" 마커가 보이나요?
+- 보인다면: 마커 생성은 정상, 데이터 문제일 가능성
+- 안 보인다면: 지도나 마커 API 문제일 가능성`;
+
+        } catch (error) {
+            result.innerHTML = `❌ 테스트 마커 생성 실패: ${error.message}`;
+        }
+    }
+
+    function clearTestMarkers() {
+        testMarkers.forEach(marker => {
+            marker.setMap(null);
+        });
+        testMarkers = [];
+
+        const result = document.getElementById('test-marker-result');
+        if (result.style.display === 'block') {
+            result.innerHTML += '\n\n🧹 테스트 마커가 제거되었습니다.';
+        }
+    }
+
+    // 자동으로 해결방안 표시
+    function showSolutions() {
+        const solutions = document.getElementById('solutions');
+        solutions.innerHTML = `
+                <div class="solution">
+                    <h3>🔍 가장 가능성 높은 원인들:</h3>
+
+                    <h4>1. 스크립트 로딩 순서 문제</h4>
+                    <p>네이버 지도 API가 완전히 로드되기 전에 마커 생성 코드가 실행되었을 가능성</p>
+                    <strong>해결:</strong>
+                    <pre>// 현재 코드의 checkNaverMapsAPI() 함수 확인
+function checkNaverMapsAPI() {
+    if (typeof naver !== 'undefined' && naver.maps && naver.maps.Map) {
+        console.log('네이버 지도 API 로드 완료');
+        initializeMap();
+    } else {
+        console.log('네이버 지도 API 대기 중...');
+        setTimeout(checkNaverMapsAPI, 100);
+    }
+}</pre>
+
+                    <h4>2. 데이터 타입 문제</h4>
+                    <p>좌표값이 문자열로 전달되어 Number() 변환이 제대로 안 되는 경우</p>
+                    <strong>해결:</strong>
+                    <pre>// 더 엄격한 좌표 검증
+const lat = parseFloat(item.lat);
+const lng = parseFloat(item.lng);
+
+console.log(\`좌표 확인: \${item.name} - lat: \${lat}, lng: \${lng}\`);
+
+if (isNaN(lat) || isNaN(lng)) {
+    console.error('좌표값 오류:', item);
+    return;
+}</pre>
+
+                    <h4>3. activate 필터링 문제</h4>
+                    <p>데이터베이스의 activate 필드가 false로 되어있을 가능성</p>
+                    <strong>확인:</strong> RestLocationController.java의 .filter(Location::isActivate) 부분
+
+                    <h4>4. CSS z-index 문제</h4>
+                    <p>마커가 생성되었지만 다른 요소에 가려져 보이지 않는 경우</p>
+                    <strong>해결:</strong> 개발자도구에서 Elements 탭으로 마커 DOM 요소 존재 여부 확인
+                </div>
+
+                <div class="solution">
+                    <h3>🛠️ 즉시 시도해볼 수 있는 해결책:</h3>
+
+                    <h4>방법 1: 브라우저 새로고침</h4>
+                    <p>Ctrl+F5 (강제 새로고침)으로 캐시를 무시하고 새로고침</p>
+
+                    <h4>방법 2: 콘솔에서 직접 확인</h4>
+                    <p>F12 개발자도구 → Console 탭에서 실행:</p>
+                    <pre>console.log('locations:', locations);
+console.log('naverMap:', window.naverMap);
+console.log('markers:', window.mapMarkers);</pre>
+
+                    <h4>방법 3: 수동 마커 생성 테스트</h4>
+                    <p>Console에서 실행:</p>
+                    <pre>new naver.maps.Marker({
+    position: new naver.maps.LatLng(37.4327975, 127.1353342),
+    map: window.naverMap,
+    title: '테스트'
+});</pre>
+                </div>`;
+    }
+
+    // 페이지 로드 시 해결방안 표시
+    document.addEventListener('DOMContentLoaded', showSolutions);
+</script>
+</body>
+</html>

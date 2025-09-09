@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>위치 등록</title>
+    <link rel="stylesheet" th:href="@{/center-skin/center-create.css}">
+    <link rel="stylesheet" th:href="@{/center-skin/menu-bar.css}">
+</head>
+<body>
+<div class="page-wrap">
+
+<div class="form-container">
+    <h2>위치 등록</h2>
+
+    <form id="locationForm" method="post" action="/api/v1/location">
+        <div class="form-group">
+            <label for="locationName">위치명</label>
+            <input type="text" id="locationName" name="locationName" required>
+        </div>
+
+        <div class="form-group">
+            <label for="locationNumber">연락처는 개인정보로 인하여 자동으로 처리됩니다</label>
+            <input type="text" id="locationNumber" name="locationNumber" value="010-XXXX-YYYY" readonly>
+        </div>
+
+        <div class="form-group">
+            <label for="locationAddress">주소</label>
+            <div class="address-group">
+                <input type="text" id="locationAddress" name="locationAddress" class="address-input" readonly required>
+                <button type="button" onclick="searchAddress()" class="btn search-btn">주소 검색</button>
+            </div>
+        </div>
+
+
+
+        <!-- ⬇ 좌표 관련 필드 제거 -->
+        <div class="create-actions-row">
+            <button type="submit" class="btn submit-btn">등록하기</button>
+            <button type="button" class="btn cancel-btn" onclick="history.back()">취소</button>
+        </div>
+    </form>
+</div>
+</div>
+
+<!-- Daum 주소 검색 -->
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script>
+    function searchAddress() {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                const fullAddress = data.roadAddress || data.jibunAddress || data.address;
+                document.getElementById("locationAddress").value = fullAddress;
+            }
+        }).open();
+    }
+
+    // 폼 제출 처리
+    document.getElementById('locationForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+
+        fetch('/api/v1/location', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => {
+                if (response.ok) {
+                    // 성공 시 루트 경로로 이동
+                    window.location.href = '/';
+                } else {
+                    return response.text().then(text => {
+                        throw new Error(text);
+                    });
+                }
+            })
+            .catch(error => {
+                alert('등록 실패: ' + error.message);
+            });
+    });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<script th:src="@{/center-skin/menu-bar.js}"></script>
+<script th:src="@{/center-skin/center-create.js}"></script>
+</body>
+</html>
